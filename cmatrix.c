@@ -67,6 +67,8 @@ int console = 0;
 int xwindow = 0;
 cmatrix **matrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
+int space = 50;      /* vertical density parameter */
+int skip = 2;        /* horizontal density parameter */  
 int *spaces = NULL;  /* Spaces left to fill */
 int *updates = NULL; /* What does this do again? */
 
@@ -136,10 +138,33 @@ void usage(void) {
     printf(" -h: Print usage and exit\n");
     printf(" -n: No bold characters (overrides -b and -B, default)\n");
     printf(" -s: \"Screensaver\" mode, exits on first keystroke\n");
+    printf(" -S <int> vertical character density; default 50\n");
+    printf(" -T <int> horizontal character density; default 2\n");
     printf(" -x: X window mode, use if your xterm is using mtx.pcf\n");
     printf(" -V: Print version information and exit\n");
     printf(" -u delay (0 - 10, default 4): Screen update delay\n");
     printf(" -C [color]: Use this color for matrix (default green)\n");
+
+    printf("\n\n Runtime keys:\n");
+    printf(" q: quit\n");
+    printf(" a: Asynchronous scroll\n");
+    printf(" b: Bold characters on\n");
+    printf(" B: All bold characters (overrides -b)\n");
+    printf(" n: No bold characters (overrides -b and -B, default)\n");
+    printf(" 0-9: Screen update delay\n");
+    printf(" !: red\n");
+    printf(" @: green\n");
+    printf(" #: yellow\n");
+    printf(" $: blue\n");
+    printf(" %%: magenta\n");
+    printf(" ^: cyan\n");
+    printf(" &: white\n");
+    printf(" m: increase vertical density by 10\n");
+    printf(" l: decrease vertical density by 10\n");
+
+    printf("\n\n Examples:\n");
+    printf(" In console try:  cmatrix -lab -S 120 -T 1\n"); 
+    printf(" In X try:        xterm -bg black -fn mtx -e cmatrix -xab\n");
 }
 
 void version(void) {
@@ -191,14 +216,14 @@ void var_init(void) {
 
     /* Make the matrix */
     for (i = 0; i <= LINES; i++) {
-        for (j = 0; j <= COLS - 1; j += 2) {
+        for (j = 0; j <= COLS - 1; j += skip) {
             matrix[i][j].val = -1;
         }
     }
 
-    for (j = 0; j <= COLS - 1; j += 2) {
+    for (j = 0; j <= COLS - 1; j += skip) {
         /* Set up spaces[] array of how many spaces to skip */
-        spaces[j] = (int) rand() % LINES + 1;
+	spaces[j] = (int) rand() % space;
 
         /* And length of the stream */
         length[j] = (int) rand() % (LINES - 3) + 3;
@@ -273,7 +298,7 @@ int main(int argc, char *argv[]) {
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBfhlnosxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBfhlnosxVS:T:u:C:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -336,6 +361,14 @@ int main(int argc, char *argv[]) {
             break;
         case 'x':
             xwindow = 1;
+            break;
+        case 'S':
+	    space = atoi(optarg);
+            if (space <= 0)
+                space = 1; 
+            break;
+        case 'T':
+	    skip = atoi(optarg);
             break;
         case 'V':
             version();
@@ -418,7 +451,7 @@ if (console) {
     } else {
         randnum = 93;
         randmin = 33;
-        highnum = 123;
+        highnum = 123; /* shouldn't this be 33 + 93 = 126 ?*/
     }
 
     var_init();
@@ -461,6 +494,16 @@ if (console) {
                 case '9':
                     update = keypress - 48;
                     break;
+                case 'm':
+		    space += 10;
+                    if (space <= 0) 
+                        space = 1;
+                    break;
+                case 'l':
+		    space -= 10;
+                    if (space <= 0)
+                        space = 1; 
+		    break;
                 case '!':
                     mcolor = COLOR_RED;
                     break;
@@ -489,7 +532,7 @@ if (console) {
                 }
             }
         }
-        for (j = 0; j <= COLS - 1; j += 2) {
+	for (j = 0; j <= COLS - 1; j += skip) {
             if ((count > updates[j] || asynch == 0) && pause == 0) {
 
                 /* I dont like old-style scrolling, yuck */
@@ -538,8 +581,8 @@ if (console) {
                             matrix[0][j].bold = 2;
                         }
 
-                        spaces[j] = (int) rand() % LINES + 1;
-                    }
+		        spaces[j] = (int) rand() % space;
+                   }
                     i = 0;
                     y = 0;
                     firstcoldone = 0;
