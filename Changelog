@@ -1,3 +1,20 @@
+cmatrix-1.1b - 04/09/2000
+- Added support for consolechars command as well as setfont.  Changes
+  affect configure.in and cmatrix.c (main).
+- cmatrix.c:
+  main():
+	- Changed optchr and keypress to ints.  Fixes endless loop
+	  condition on Irix.		
+  c_die():
+	- New function, uses va_args to die with better info on the
+	  screen.
+- configure.in:
+  - Rewrote tests for console and X window font directories.  Moved all
+    font searches to end of the file so error messages could be more
+    easily seen when running configure.
+- Makefile.am:
+  - Better information messages for installing X window fonts.
+
 cmatrix-1.1a - 04/03/2000
 - New autoconf support.  Probably a few things broken but it's a helluva
   lot better than the previous Makefile stuff.

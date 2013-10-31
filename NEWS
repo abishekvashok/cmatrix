@@ -1,3 +1,8 @@
+04/09/2000 - CMatrix 1.1b includes support for the consolechars command
+		as well as the older setfont.  Also included is better
+		autoconf support and more helpful instruction in the
+		Makefiles.
+
 04/03/2000 - CMatrix 1.1a is released.  After a hiatus, interest in the
 		project has seemed to swell, so I'm releasing a 
 		(hopefully) improved and updated version of CMatrix.

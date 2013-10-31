@@ -86,10 +86,37 @@ RETSIGTYPE finish(int sigage)
     refresh();
     resetty();
     endwin();
-#ifdef HAVE_SETFONT
+#ifdef HAVE_CONSOLECHARS
     if (console)
-	va_system("setfont 2>/dev/null");
+	va_system("consolechars -d");
+#elif defined(HAVE_SETFONT)
+    if (console)
+	va_system("setfont");
 #endif
+    exit(0);
+}
+
+/* What we do when we're all set to exit */
+RETSIGTYPE c_die(char *msg, ...)
+{
+    va_list ap;
+
+    curs_set(1);
+    clear();
+    refresh();
+    resetty();
+    endwin();
+#ifdef HAVE_CONSOLECHARS
+    if (console)
+	va_system("consolechars -d");
+#elif defined(HAVE_SETFONT)
+    if (console)
+	va_system("setfont");
+#endif
+
+    va_start(ap, msg);
+    vfprintf(stderr, "%s", ap);
+    va_end(ap);
     exit(0);
 }
 
@@ -100,7 +127,7 @@ void usage(void)
     printf(" -b: Bold characters on\n");
     printf(" -B: All bold characters (overrides -b)\n");
     printf(" -f: Don't force the linux $TERM type\n");
-    printf(" -l: Linux mode (sets \"matrix.fnt\" console font)\n");
+    printf(" -l: Linux mode (uses matrix console font)\n");
     printf(" -o: Use old-style scrolling\n");
     printf(" -h: Print usage and exit\n");
     printf(" -n: No bold characters (overrides -b and -B, default)\n");
@@ -129,7 +156,7 @@ int main(int argc, char *argv[])
     int length[MAXCOLS];
     int spaces[MAXCOLS];
     int updates[MAXCOLS];
-    char optchr, keypress;
+    int optchr, keypress;
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
@@ -220,13 +247,19 @@ int main(int argc, char *argv[])
     curs_set(0);
     signal(SIGINT, finish);
 
-#ifdef HAVE_SETFONT
+#ifdef HAVE_CONSOLECHARS
     if (console)
-	if (va_system("setfont matrix 2>/dev/null") != 0) {
-	    printf
+	if (va_system("consolechars -f matrix") != 0) {
+	    c_die
+		(" There was an error running consolechars. Please make sure the\n"
+		 " consolechars program is in your $PATH.  Try running \"setfont matrix\" by hand.\n");
+	}
+#elif defined(HAVE_SETFONT)
+    if (console)
+	if (va_system("setfont matrix") != 0) {
+	    c_die
 		(" There was an error running setfont. Please make sure the\n"
 		 " setfont program is in your $PATH.  Try running \"setfont matrix\" by hand.\n");
-	    finish(0);
 	}
 #endif
     if (has_colors()) {
