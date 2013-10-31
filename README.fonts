@@ -1,0 +1,14 @@
+
+About the fonts:
+
+	The fonts used in cmatrix use the asian font "katakana" and the
+numbers 0-9, written backwards on the screen. The two fonts included
+"matrix.fnt" for the linux console, and "mtx.pcf" for X window were
+created by me using the default-8x16 console font as a base, and adding in
+the special characters in the high ascii portion.  The fonts were drawn
+"by hand" and edited with the programs fonteditor 0.01  by Lev Levitin and
+fonter 1.7 by Chris Monahan.  These are two excellent console font editors
+for X and the console, respectively.  The X window pcf font was created by
+using matrix.fnt and using fonter to turn it into a pcf file.  Kudos to
+these two great people for helping me create a font that was suitable for
+both running cmatrix and for general usage.

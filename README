@@ -1,0 +1,44 @@
+CMatrix - show a scrolling 'Matrix' like screen in Linux (curses based)
+------------------------------------------------------------------------------
+
+CMatrix Homepage - be sure to check out the latest version =-)
+http://www.plattsburgh.edu/faculty/allegrcr/cmatrix/index.html
+
+To compile the program, type 'make'.
+
+CMatrix by default operates in 'eye candy' mode.  It must be aborted with
+control-c or 'q'.  If you wish for more of a 'screen saver' effect, you
+must specify -s on the command line.  For usage, use cmatrix -h.
+
+  To get the program to look most like the movie, use cmatrix -lba
+  To get the program to look most like the Win/Mac screensaver, use
+  cmatrix -ol
+
+   You'll probably need a decent ncurses library to get this to work. I
+have provided a binary that depends on ncurses 4.2 & glibc6.
+   If you have any suggestions/flames/patches to send, please feel free to
+do so.  Please do not critique my code, I know I'm a hack ;-)  I just got
+the urge to write this one evening, and decided to see how fast I could do
+it.  It's probably not particularly portable or efficient, but I'm pretty
+sure it wont hog *too* much CPU time.
+
+Chris Allegretta
+chris.allegretta@plattsburgh.edu
+
+Thanks to:
+- Krisjon Hanson and Bjoern Ganslandt for helping with bold support and 
+  Bjoern again for the cursor removal code, helping with the -u and -l
+  modes/flags, and Makefile improvements.
+- Adam Gurno for multi-color support.
+- Garrick West for debian consolefont dir support.
+- nemo for design thoughts and continuous help and support.
+- John Donahue for helping with transparent term support
+- Ben Esacove for Redhat 6 compatibility w/matrix.psf.gz
+- Everyone who has been sending (and who will send) me mail regarding
+  bugs, comments, patches or just a hello. =-)
+- jwz for the xmatrix module to xscreensaver at http://www.jwz.org/xscreensaver.
+- My girlfriend Amy for not killing me when I stayed up till 3AM writing this =)
+- The makers of the Matrix for one kickass movie!
+
+This software is provided under the GNU GPL.  I am in no way affiliated
+in any way with the movie 'The Matrix', just a big fan.

@@ -1,0 +1,4 @@
+- Implemet nemo's idea about % of characters on screen (-c?) and percent bold
+  on screen (combine -b and -B with -b%%)
+- Allow segments within collumns to scroll at different speeds
+- Implement horizontal scrolling for messages etc like credits from movie.
