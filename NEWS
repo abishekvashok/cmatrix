@@ -1,3 +1,12 @@
+03/31/2002 - Happy Easter!  After a long, long dormant period, CMatrix 
+		has finally seen a new release.  The static limitations
+		on size are now history, as the matrix size is allocated
+		dynamically.  CMatrix can now also be resized on the
+		fly. Also, the -f option has been reversed, it now turns
+		the "linux" $TERM type on instead of off; most modern
+		GNU/Linux systems don't seem to need this option anymore.
+		There is now also a .spec file included for easy build.
+
 04/09/2000 - CMatrix 1.1b includes support for the consolechars command
 		as well as the older setfont.  Also included is better
 		autoconf support and more helpful instruction in the

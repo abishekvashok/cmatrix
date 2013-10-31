@@ -18,9 +18,6 @@
  *                                                                        *
  **************************************************************************/
 
-#define MAXROWS 133
-#define MAXCOLS 300
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -57,14 +54,19 @@
 #endif				/* HAVE_TERMIO_H */
 
 
-/* Global variables, unfortunately */
-int console = 0, xwindow = 0;
 
 /* Matrix typedef */
 typedef struct cmatrix {
     int val;
     int bold;
 } cmatrix;
+
+/* Global variables, unfortunately */
+int console = 0, xwindow = 0;		/* Are we in the console? X? */
+cmatrix **matrix = (cmatrix **) NULL;   /* The matrix has you */
+int *length = NULL;			/* Length of cols in each line */
+int *spaces = NULL;			/* spaces left to fill */
+int *updates = NULL;			/* What does this do again? :) */
 
 int va_system(char *str, ...)
 {
@@ -126,7 +128,7 @@ void usage(void)
     printf(" -a: Asynchronous scroll\n");
     printf(" -b: Bold characters on\n");
     printf(" -B: All bold characters (overrides -b)\n");
-    printf(" -f: Don't force the linux $TERM type\n");
+    printf(" -f: Force the linux $TERM type to be on\n");
     printf(" -l: Linux mode (uses matrix console font)\n");
     printf(" -o: Use old-style scrolling\n");
     printf(" -h: Print usage and exit\n");
@@ -145,6 +147,102 @@ void version(void)
     printf(" Email: cmatrix@asty.org  Web: http://www.asty.org/cmatrix\n");
 }
 
+
+/* nmalloc from nano by Big Gaute */
+void *nmalloc(size_t howmuch)
+{
+    void *r;
+
+    /* Panic save? */
+
+    if (!(r = malloc(howmuch)))
+	c_die("CMatrix: malloc: out of memory!");
+
+    return r;
+}
+
+/* Initialize the global variables */
+RETSIGTYPE var_init(void)
+{
+    int i, j;
+
+    if (matrix != NULL)
+	free(matrix);
+
+    matrix = nmalloc(sizeof(cmatrix) * (LINES + 1));
+    for (i = 0; i <= LINES; i++)
+	matrix[i] = nmalloc(sizeof(cmatrix) * COLS);
+
+    if (length != NULL)
+	free(length);
+    length = nmalloc(COLS * sizeof(int));
+
+    if (spaces != NULL)
+	free(spaces);
+    spaces = nmalloc(COLS* sizeof(int));
+
+    if (updates != NULL)
+	free(updates);
+    updates = nmalloc(COLS * sizeof(int));
+
+    /* Make the matrix */
+    for (i = 0; i <= LINES; i++)
+	for (j = 0; j <= COLS - 1; j += 2)
+	    matrix[i][j].val = -1;
+
+    for (j = 0; j <= COLS - 1; j += 2) {
+	/* Set up spaces[] array of how many spaces to skip */
+	spaces[j] = (int) rand() % LINES + 1;
+
+	/* And length of the stream */
+	length[j] = (int) rand() % (LINES - 3) + 3;
+
+	/* Sentinel value for creation of new objects */
+	matrix[1][j].val = ' ';
+
+	/* And set updates[] array for update speed. */
+	updates[j] = (int) rand() % 3 + 1;
+    }
+
+}
+
+void handle_sigwinch(int s)
+{
+    char *tty = NULL;
+    int fd = 0;
+    int result = 0;
+    struct winsize win;
+
+    tty = ttyname(0);
+    if (!tty)
+	return;
+    fd = open(tty, O_RDWR);
+    if (fd == -1)
+	return;
+    result = ioctl(fd, TIOCGWINSZ, &win);
+    if (result == -1)
+	return;
+
+    COLS = win.ws_col;
+    LINES = win.ws_row;
+
+#ifdef HAVE_RESIZETERM
+    resizeterm(LINES, COLS);
+#ifdef HAVE_WRESIZE
+    if (wresize(stdscr, LINES, COLS) == ERR)
+	c_die("Cannot resize window!");
+#endif				/* HAVE_WRESIZE */
+#endif				/* HAVE_RESIZETERM */
+
+    var_init();
+    /* Do these b/c width may have changed... */
+    clear();
+    refresh();
+
+}
+
+
+
 int main(int argc, char *argv[])
 {
     int i, j = 0, count = 0, screensaver = 0, asynch = 0, bold = -1,
@@ -152,10 +250,7 @@ int main(int argc, char *argv[])
 	0, update = 4, highnum = 0, mcolor = COLOR_GREEN, randnum =
 	0, randmin = 0;
 
-    cmatrix matrix[MAXROWS + 1][MAXCOLS];
-    int length[MAXCOLS];
-    int spaces[MAXCOLS];
-    int updates[MAXCOLS];
+    char *oldtermname, *syscmd = NULL;
     int optchr, keypress;
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
@@ -232,7 +327,8 @@ int main(int argc, char *argv[])
     if (bold == -1)
 	bold = 0;
 
-    if (!force && strcmp("linux", getenv("TERM"))) {
+    oldtermname = getenv("TERM");
+    if (force && strcmp("linux", getenv("TERM"))) {
 	/* Portability wins out here, apparently putenv is much more
 	   common on non-Linux than setenv */
 	putenv("TERM=linux");
@@ -246,6 +342,7 @@ int main(int argc, char *argv[])
     leaveok(stdscr, TRUE);
     curs_set(0);
     signal(SIGINT, finish);
+    signal(SIGWINCH, handle_sigwinch);
 
 #ifdef HAVE_CONSOLECHARS
     if (console)
@@ -303,24 +400,7 @@ int main(int argc, char *argv[])
 	highnum = 123;
     }
 
-    /* Make the matrix */
-    for (i = 0; i <= LINES; i++)
-	for (j = 0; j <= COLS - 1; j += 2)
-	    matrix[i][j].val = -1;
-
-    for (j = 0; j <= COLS - 1; j += 2) {
-	/* Set up spaces[] array of how many spaces to skip */
-	spaces[j] = (int) rand() % LINES + 1;
-
-	/* And length of the stream */
-	length[j] = (int) rand() % (LINES - 3) + 3;
-
-	/* Sentinel value for creation of new objects */
-	matrix[1][j].val = ' ';
-
-	/* And set updates[] array for update speed. */
-	updates[j] = (int) rand() % 3 + 1;
-    }
+    var_init();
 
     while (1) {
 	count++;
@@ -441,8 +521,8 @@ int main(int argc, char *argv[])
 		    while (i <= LINES) {
 
 			/* Skip over spaces */
-			while (matrix[i][j].val == ' ' ||
-			       matrix[i][j].val == -1)
+			while (i <= LINES && (matrix[i][j].val == ' ' ||
+			       matrix[i][j].val == -1))
 			    i++;
 
 			if (i > LINES)
@@ -451,8 +531,8 @@ int main(int argc, char *argv[])
 			/* Go to the head of this collumn */
 			z = i;
 			y = 0;
-			while ((matrix[i][j].val != ' ' &&
-				matrix[i][j].val != -1) && i <= LINES) {
+			while (i <= LINES && (matrix[i][j].val != ' ' &&
+				matrix[i][j].val != -1)) {
 			    i++;
 			    y++;
 			}
@@ -545,8 +625,13 @@ int main(int argc, char *argv[])
 	}
 	refresh();
 	napms(update * 10);
+
     }
 
+    syscmd = nmalloc(sizeof (char *) * (strlen(oldtermname) + 15));
+    sprintf(syscmd, "putenv TERM=%s", oldtermname);    
+    system(syscmd);
     finish(0);
 
 }
+

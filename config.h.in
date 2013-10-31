@@ -1,4 +1,4 @@
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define as the return type of signal handlers (int or void).  */
 #undef RETSIGTYPE
@@ -15,6 +15,12 @@
 
 /* Define this if you have the linux setfont program */
 #undef HAVE_SETFONT
+
+/* Define this if you have the wresize function in your ncurses-type library */
+#undef HAVE_WRESIZE
+
+/* Define this if you have the resizeterm function in your ncurses-type library */
+#undef HAVE_RESIZETERM
 
 /* Define if you have the putenv function.  */
 #undef HAVE_PUTENV

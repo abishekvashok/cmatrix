@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(cmatrix.c)
-AM_INIT_AUTOMAKE(cmatrix, 1.1b)
+AM_INIT_AUTOMAKE(cmatrix, 1.2a)
 AM_CONFIG_HEADER(config.h)
 
 dnl Checks for programs.
@@ -51,6 +51,9 @@ fi
 
 AC_CHECK_LIB($CURSES_LIB_NAME, use_default_colors,
 	 AC_DEFINE(HAVE_USE_DEFAULT_COLORS))
+AC_CHECK_LIB($CURSES_LIB_NAME, resizeterm, [AC_DEFINE(HAVE_RESIZETERM)])
+AC_CHECK_LIB([$CURSES_LIB_NAME], wresize, [AC_DEFINE(HAVE_WRESIZE)])
+
 
 dnl Only change gcc options if we are using gcc.  
 if test "$ac_cv_prog_CC" = gcc -o "$ac_cv_prog_CC" = g++; then
@@ -124,4 +127,4 @@ AC_ARG_ENABLE(debug, [  --enable-debug          Enable debugging (def disabled)]
 
 AC_SUBST(CURSES_LIB)
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile cmatrix.spec)
