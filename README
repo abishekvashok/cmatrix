@@ -2,7 +2,7 @@ CMatrix - show a scrolling 'Matrix' like screen in Linux (curses based)
 ------------------------------------------------------------------------------
 
 CMatrix Homepage - be sure to check out the latest version =-)
-http://www.plattsburgh.edu/faculty/allegrcr/cmatrix/index.html
+http://www.asty.org/cmatrix
 
 To compile the program, type 'make'.
 
@@ -23,7 +23,7 @@ it.  It's probably not particularly portable or efficient, but I'm pretty
 sure it wont hog *too* much CPU time.
 
 Chris Allegretta
-chris.allegretta@plattsburgh.edu
+chrisa@asty.org
 
 Thanks to:
 - Krisjon Hanson and Bjoern Ganslandt for helping with bold support and 

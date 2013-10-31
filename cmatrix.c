@@ -18,23 +18,44 @@
  *                                                                        *
  **************************************************************************/
 
-#define VERSION "1.0b"
 #define MAXROWS 133
 #define MAXCOLS 300
 
 #include <stdio.h>
-#include <curses.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <termios.h>
-#include <sys/ioctl.h>
 #include <signal.h>
+
+#include "config.h"
+
+#ifdef HAVE_NCURSES_H
+#include <ncurses.h>
+#else				/* Uh oh */
+#include <curses.h>
+#endif				/* CURSES_H */
+
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif				/* HAVE_SYS_IOCTL_H */
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif				/* HAVE_UNISTD_H */
+
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
+#endif				/* HAVE_TERMIOS_H */
+
+#ifdef HAVE_TERMIO_H
+#include <termio.h>
+#endif				/* HAVE_TERMIO_H */
+
 
 /* Global variables, unfortunately */
 int console = 0, xwindow = 0;
@@ -45,16 +66,30 @@ typedef struct cmatrix {
     int bold;
 } cmatrix;
 
+int va_system(char *str, ...)
+{
+
+    va_list ap;
+    char foo[133];
+
+    va_start(ap, str);
+    vsnprintf(foo, 132, str, ap);
+    va_end(ap);
+    return system(foo);
+}
+
 /* What we do when we're all set to exit */
-void finish(int sigage)
+RETSIGTYPE finish(int sigage)
 {
     curs_set(1);
     clear();
     refresh();
     resetty();
     endwin();
+#ifdef HAVE_SETFONT
     if (console)
-	system("setfont 2>/dev/null");
+	va_system("setfont 2>/dev/null");
+#endif
     exit(0);
 }
 
@@ -78,14 +113,17 @@ void usage(void)
 
 void version(void)
 {
-    printf(" CMatrix, version %s by Chris Allegretta.\n", VERSION);
+    printf(" CMatrix version %s by Chris Allegretta (compiled %s, %s)\n",
+	   VERSION, __TIME__, __DATE__);
+    printf(" Email: cmatrix@asty.org  Web: http://www.asty.org/cmatrix\n");
 }
 
 int main(int argc, char *argv[])
 {
     int i, j = 0, count = 0, screensaver = 0, asynch = 0, bold = -1,
-    force = 0, y, z, firstcoldone = 0, oldstyle = 0, random = 0, update =
-    4, highnum = 0, mcolor = COLOR_GREEN, randnum = 0, randmin = 0;
+	force = 0, y, z, firstcoldone = 0, oldstyle = 0, random =
+	0, update = 4, highnum = 0, mcolor = COLOR_GREEN, randnum =
+	0, randmin = 0;
 
     cmatrix matrix[MAXROWS + 1][MAXCOLS];
     int length[MAXCOLS];
@@ -131,8 +169,7 @@ int main(int argc, char *argv[])
 	    else {
 		printf(" Invalid color selection\n Valid "
 		       "colors are green, red, blue, "
-		       "white, yellow, cyan, magenta "
-		       "and black.\n");
+		       "white, yellow, cyan, magenta " "and black.\n");
 		exit(1);
 	    }
 	    break;
@@ -183,16 +220,19 @@ int main(int argc, char *argv[])
     curs_set(0);
     signal(SIGINT, finish);
 
+#ifdef HAVE_SETFONT
     if (console)
-	if (system("setfont matrix 2>/dev/null") != 0) {
-	    printf(" There was an error running setfont. Please make sure the\n"
-		   " setfont program is in your $PATH.  Try running \"setfont matrix\" by hand.\n");
+	if (va_system("setfont matrix 2>/dev/null") != 0) {
+	    printf
+		(" There was an error running setfont. Please make sure the\n"
+		 " setfont program is in your $PATH.  Try running \"setfont matrix\" by hand.\n");
 	    finish(0);
 	}
-
+#endif
     if (has_colors()) {
 	start_color();
 	/* Add in colors, if available */
+#ifdef HAVE_USE_DEFAULT_COLORS
 	if (use_default_colors() != ERR) {
 	    init_pair(COLOR_BLACK, -1, -1);
 	    init_pair(COLOR_GREEN, COLOR_GREEN, -1);
@@ -203,6 +243,9 @@ int main(int argc, char *argv[])
 	    init_pair(COLOR_BLUE, COLOR_BLUE, -1);
 	    init_pair(COLOR_YELLOW, COLOR_YELLOW, -1);
 	} else {
+#else
+	{
+#endif
 	    init_pair(COLOR_BLACK, COLOR_BLACK, COLOR_BLACK);
 	    init_pair(COLOR_GREEN, COLOR_GREEN, COLOR_BLACK);
 	    init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
@@ -318,8 +361,8 @@ int main(int argc, char *argv[])
 
 		    if (matrix[1][j].val == 0)
 			matrix[0][j].val = 1;
-		    else if (matrix[1][j].val == ' ' || matrix[1][j].val
-			     == -1) {
+		    else if (matrix[1][j].val == ' '
+			     || matrix[1][j].val == -1) {
 			if (spaces[j] > 0) {
 			    matrix[0][j].val = ' ';
 			    spaces[j]--;
@@ -339,17 +382,20 @@ int main(int argc, char *argv[])
 		    } else if (random > highnum && matrix[1][j].val != 1)
 			matrix[0][j].val = ' ';
 		    else
-			matrix[0][j].val = (int) rand() % randnum + randmin;
+			matrix[0][j].val =
+			    (int) rand() % randnum + randmin;
 
 		} else {	/* New style scrolling (default) */
-		    if (matrix[0][j].val == -1 && matrix[1][j].val == ' ' &&
-			spaces[j] > 0) {
+		    if (matrix[0][j].val == -1 && matrix[1][j].val == ' '
+			&& spaces[j] > 0) {
 			matrix[0][j].val = -1;
 			spaces[j]--;
-		    } else if (matrix[0][j].val == -1 && matrix[1][j].val
-			       == ' ') {
+		    }
+			else if (matrix[0][j].val == -1
+				 && matrix[1][j].val == ' ') {
 			length[j] = (int) rand() % (LINES - 3) + 3;
-			matrix[0][j].val = (int) rand() % randnum + randmin;
+			matrix[0][j].val =
+			    (int) rand() % randnum + randmin;
 
 			if ((int) rand() % 2 == 1)
 			    matrix[0][j].bold = 2;
@@ -373,8 +419,7 @@ int main(int argc, char *argv[])
 			z = i;
 			y = 0;
 			while ((matrix[i][j].val != ' ' &&
-				matrix[i][j].val != -1)
-			       && i <= LINES) {
+				matrix[i][j].val != -1) && i <= LINES) {
 			    i++;
 			    y++;
 			}
@@ -385,7 +430,8 @@ int main(int argc, char *argv[])
 			    continue;
 			}
 
-			matrix[i][j].val = (int) rand() % randnum + randmin;
+			matrix[i][j].val =
+			    (int) rand() % randnum + randmin;
 
 			if (matrix[i - 1][j].bold == 2) {
 			    matrix[i - 1][j].bold = 1;
