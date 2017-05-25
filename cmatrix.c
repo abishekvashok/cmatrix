@@ -245,6 +245,13 @@ void handle_sigwinch(int s)
 
 int main(int argc, char *argv[])
 {
+	time_t t;
+	srand((unsigned) time(&t));
+	
+	
+	/*for random number generation*/
+	
+	
     int i, j = 0, count = 0, screensaver = 0, asynch = 0, bold = -1,
 	force = 0, y, z, firstcoldone = 0, oldstyle = 0, random =
 	0, update = 4, highnum = 0, mcolor = COLOR_GREEN, randnum =
@@ -579,7 +586,10 @@ int main(int argc, char *argv[])
 		if (matrix[i][j].val == 0 || matrix[i][j].bold == 2) {
 		    if (console || xwindow)
 			attron(A_ALTCHARSET);
-		    attron(COLOR_PAIR(COLOR_WHITE));
+		    attron(COLOR_PAIR(COLOR_WHITE));,
+			//attroff turns off the named attributes without 
+			//turning any other attributes on or off
+			
 		    if (bold)
 			attron(A_BOLD);
 		    if (matrix[i][j].val == 0) {
@@ -596,6 +606,45 @@ int main(int argc, char *argv[])
 		    if (console || xwindow)
 			attroff(A_ALTCHARSET);
 		} else {
+			//get random color every time
+			/*
+			COLOR_GREEN
+			COLOR_BLUE
+			COLOR_WHITE
+			COLOR_YELLOW
+			COLOR_CYAN
+			COLOR_MAGENTA
+			COLOR_BLACK
+	  	
+			*/
+			
+			int randomColor = rand() % 6;
+			
+			switch(randomColor){
+			case  0:
+				mcolor = COLOR_GREEN;
+				break;
+			case  1: 
+				mcolor = COLOR_BLUE;
+				break;			
+			case  2: 
+				mcolor = COLOR_WHITE;
+				break;			
+			case  3:
+				mcolor = COLOR_YELLOW;
+				break;
+			case  4:
+				mcolor = COLOR_CYAN;
+				break; 			
+			case  5: 
+				mcolor = COLOR_MAGENTA;
+				break;			
+			case  6: 
+				mcolor = COLOR_BLACK;
+				break;			
+			}
+			
+			
 		    attron(COLOR_PAIR(mcolor));
 		    if (matrix[i][j].val == 1) {
 			if (bold)
