@@ -1,0 +1,24 @@
+config.h
+Makefile
+stamp-h
+stamp-h[0-9]*
+config.cache
+config.log
+config.status
+config.guess
+configure.lineno
+config.status.lineno
+autom4te.cache/
+.deps
+*.tab.c
+TAGS
+ID
+GTAGS GRTAGS GSYMS GPATH tags
+cscope.out
+cscope.in.out
+cscope.po.out
+cscope.files
+cmatrix
+*.o
+*.core
+

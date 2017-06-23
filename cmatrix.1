@@ -1,0 +1,80 @@
+.TH CMatrix 1 "Mon May 3 1999"
+.SH NAME
+CMatrix
+.SH SYNOPSIS
+.B cmatrix
+[\-abBflohnsVx] [\-u update] [\-C color]
+.SH DESCRIPTION
+Shows a scrolling 'Matrix' like screen in Linux
+.SS OPTIONS
+.TP
+.I "\-a"
+Asynchronous scroll
+.TP
+.I "\-b"
+Bold characters on
+.TP
+.I "\-B"
+All bold characters (overrides \-b)
+.TP
+.I "\-f"
+Force the linux $TERM type to be on
+.TP
+.I "\-l"
+Linux mode (sets "matrix.fnt" font in console)
+.TP
+.I "\-o"
+Use old-style scrolling
+.TP
+.I "\-h, \-?"
+Print usage and exit
+.TP
+.I "\-n"
+No bold characters (overrides \-b and \-B)
+.TP
+.I "\-s"
+"Screensaver" mode, exits on first keystroke
+.TP
+.I "\-x"
+X window mode, use if your xterm is using mtx.pcf
+.TP
+.I "\-V"
+Print version information and exit
+.TP
+.I "\-u delay"
+Screen update delay 0 - 9, default 4
+.TP
+.I "\-C color"
+Use this color for matrix (default green). 
+Valid colors are green, red, blue, white, yellow, cyan, magenta and black.
+.SS KEYSTROKES
+The following keystrokes are available during execution (unavailable in
+\-s mode)
+.TP
+.I "a"
+Toggle asynchronous scroll
+.TP
+.I "b"
+Random bold characters
+.TP
+.I "B"
+All bold characters
+.TP
+.I "n"
+Turn off bold characters
+.TP
+.I "0\-9"
+Adjust update speed
+.TP
+.I "! @ # $ % ^ & )"
+Change the color of the matrix to the corresponding color:
+! \- red, @ \- green, # \- yellow, $ \- blue, % \- magenta, ^ \- cyan,
+& \- white, ) \- black.
+.TP
+.I "q"
+Quit the program
+.SH BUGS
+This program is very CPU intensive.  Don't be surprised if it eats up over
+40% of your CPU at times.
+.SH HOMEPAGE
+http://www.github.com/abishekvashok/cmatrix
