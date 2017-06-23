@@ -82,7 +82,7 @@ int va_system(char *str, ...) {
 }
 
 /* What we do when we're all set to exit */
-RETSIGTYPE finish(int sigage) {
+void finish(int sigage) {
     curs_set(1);
     clear();
     refresh();
@@ -101,7 +101,7 @@ RETSIGTYPE finish(int sigage) {
 }
 
 /* What we do when we're all set to exit */
-RETSIGTYPE c_die(char *msg, ...) {
+void c_die(char *msg, ...) {
 
     va_list ap;
 
@@ -162,7 +162,7 @@ void *nmalloc(size_t howmuch) {
 }
 
 /* Initialize the global variables */
-RETSIGTYPE var_init(void) {
+void var_init(void) {
     int i, j;
 
     if (matrix != NULL) {

@@ -1,0 +1,110 @@
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+/* Define this if your curses library has use_default_colors, for 
+   cool transparency =-) */
+#undef HAVE_USE_DEFAULT_COLORS
+
+/* Define this if you have the linux consolechars program */
+#undef HAVE_CONSOLECHARS
+
+/* Define this if you have the linux setfont program */
+#undef HAVE_SETFONT
+
+/* Define this if you have the wresize function in your ncurses-type library */
+#undef HAVE_WRESIZE
+
+/* Define this if you have the resizeterm function in your ncurses-type library */
+#undef HAVE_RESIZETERM
+
+
+/* Define to 1 if you have the <curses.h> header file. */
+#undef HAVE_CURSES_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `ncurses' library (-lncurses). */
+#undef HAVE_LIBNCURSES
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <ncurses.h> header file. */
+#undef HAVE_NCURSES_H
+
+/* Define to 1 if you have the `putenv' function. */
+#undef HAVE_PUTENV
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <termios.h> header file. */
+#undef HAVE_TERMIOS_H
+
+/* Define to 1 if you have the <termio.h> header file. */
+#undef HAVE_TERMIO_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the file `/usr/lib/kbd/consolefonts'. */
+#undef HAVE__USR_LIB_KBD_CONSOLEFONTS
+
+/* Define to 1 if you have the file `/usr/lib/X11/fonts/misc'. */
+#undef HAVE__USR_LIB_X11_FONTS_MISC
+
+/* Define to 1 if you have the file `/usr/share/consolefonts'. */
+#undef HAVE__USR_SHARE_CONSOLEFONTS
+
+/* Define to 1 if you have the file `/usr/X11R6/lib/X11/fonts/misc'. */
+#undef HAVE__USR_X11R6_LIB_X11_FONTS_MISC
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define as the return type of signal handlers (`int' or `void'). */
+#undef RETSIGTYPE
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Version number of package */
+#undef VERSION
