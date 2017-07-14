@@ -664,7 +664,7 @@ if (console) {
 
                     if(rainbow){
  
-                        int randomColor = rand() % 5;
+                        int randomColor = rand() % 6;
 
                     	switch(randomColor){
 				            case  0:
