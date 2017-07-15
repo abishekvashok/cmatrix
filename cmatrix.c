@@ -140,6 +140,7 @@ void usage(void) {
     printf(" -V: Print version information and exit\n");
     printf(" -u delay (0 - 10, default 4): Screen update delay\n");
     printf(" -C [color]: Use this color for matrix (default green)\n");
+    printf(" -r: rainbow mode\n");
 }
 
 void version(void) {
@@ -235,6 +236,13 @@ void handle_sigwinch(int s) {
     COLS = win.ws_col;
     LINES = win.ws_row;
 
+    if(LINES <10){
+        LINES = 10;
+    }
+    if(COLS <10){
+        COLS = 10;
+    }
+
 #ifdef HAVE_RESIZETERM
     resizeterm(LINES, COLS);
 #ifdef HAVE_WRESIZE
@@ -264,6 +272,7 @@ int main(int argc, char *argv[]) {
     int update = 4;
     int highnum = 0;
     int mcolor = COLOR_GREEN;
+    int rainbow = 0;    
     int randnum = 0;
     int randmin = 0;
     int pause = 0;
@@ -271,9 +280,13 @@ int main(int argc, char *argv[]) {
     char *oldtermname;
     char *syscmd = NULL;
 
+    time_t t;
+    srand((unsigned) time(&t));
+
+
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBfhlnosxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBfhlnrosxVu:C:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -340,6 +353,9 @@ int main(int argc, char *argv[]) {
         case 'V':
             version();
             exit(0);
+        case 'r':
+             rainbow = 1;
+             break;
         }
     }
 
@@ -424,6 +440,7 @@ if (console) {
     var_init();
 
     while (1) {
+
         count++;
         if (count > 4) {
             count = 1;
@@ -463,29 +480,40 @@ if (console) {
                     break;
                 case '!':
                     mcolor = COLOR_RED;
+                    rainbow = 0;
                     break;
                 case '@':
                     mcolor = COLOR_GREEN;
+                    rainbow = 0;
                     break;
                 case '#':
                     mcolor = COLOR_YELLOW;
+                    rainbow = 0;
                     break;
                 case '$':
                     mcolor = COLOR_BLUE;
+                    rainbow = 0;
                     break;
                 case '%':
                     mcolor = COLOR_MAGENTA;
+                    rainbow = 0;
                     break;
+                case 'r':
+                     rainbow = 1;
+                     break;
                 case '^':
                     mcolor = COLOR_CYAN;
+                    rainbow = 0;
                     break;
                 case '&':
                     mcolor = COLOR_WHITE;
+                    rainbow = 0;
                     break;
                 case 'p':
                 case 'P':
                     pause = (pause == 0)?1:0;
                     break;
+
                 }
             }
         }
@@ -628,6 +656,31 @@ if (console) {
                         attroff(A_ALTCHARSET);
                     }
                 } else {
+
+                    if(rainbow){ 
+                        int randomColor = rand() % 6;
+
+                        switch(randomColor){
+                            case 0:
+                                mcolor = COLOR_GREEN;
+                                break;
+                            case 1: 
+                                mcolor = COLOR_BLUE;
+                                break;
+                            case 2: 
+                                mcolor = COLOR_BLACK;
+                                break;
+                            case 3:
+                                mcolor = COLOR_YELLOW;
+                                break;
+                            case 4:
+                                mcolor = COLOR_CYAN;
+                                break;
+                            case 5: 
+                                mcolor = COLOR_MAGENTA;
+                                break;
+                       }
+                    }
                     attron(COLOR_PAIR(mcolor));
                     if (matrix[i][j].val == 1) {
                         if (bold) {
