@@ -166,9 +166,6 @@ void *nmalloc(size_t howmuch) {
 void var_init(void) {
     int i, j;
 
-    
-
-
     if (matrix != NULL) {
         free(matrix);
     }
@@ -205,9 +202,8 @@ void var_init(void) {
         spaces[j] = (int) rand() % LINES + 1;
 
         /* And length of the stream */
-    
         length[j] = (int) rand() % (LINES - 3) + 3;
-        
+
         /* Sentinel value for creation of new objects */
         matrix[1][j].val = ' ';
 
@@ -445,7 +441,6 @@ if (console) {
 
     while (1) {
 
-        
         count++;
         if (count > 4) {
             count = 1;
@@ -489,7 +484,7 @@ if (console) {
                     break;
                 case '@':
                     mcolor = COLOR_GREEN;
-                    rainbow = 0;                    
+                    rainbow = 0;
                     break;
                 case '#':
                     mcolor = COLOR_YELLOW;
@@ -662,32 +657,30 @@ if (console) {
                     }
                 } else {
 
-                    if(rainbow){
- 
+                    if(rainbow){ 
                         int randomColor = rand() % 6;
 
-                    	switch(randomColor){
-				            case  0:
-					            mcolor = COLOR_GREEN;
-					            break;
-				            case  1: 
-					            mcolor = COLOR_BLUE;
-					            break;			
-				            case  2: 
-					            mcolor = COLOR_BLACK;
-					            break;			
-				            case  3:
-					            mcolor = COLOR_YELLOW;
-					            break;
-				            case  4:
-					            mcolor = COLOR_CYAN;
-					            break; 			
-				            case  5: 
-					            mcolor = COLOR_MAGENTA;
-					            break;			
-				            }
-				
-        			}
+                        switch(randomColor){
+                            case 0:
+                                mcolor = COLOR_GREEN;
+                                break;
+                            case 1: 
+                                mcolor = COLOR_BLUE;
+                                break;
+                            case 2: 
+                                mcolor = COLOR_BLACK;
+                                break;
+                            case 3:
+                                mcolor = COLOR_YELLOW;
+                                break;
+                            case 4:
+                                mcolor = COLOR_CYAN;
+                                break;
+                            case 5: 
+                                mcolor = COLOR_MAGENTA;
+                                break;
+                       }
+                    }
                     attron(COLOR_PAIR(mcolor));
                     if (matrix[i][j].val == 1) {
                         if (bold) {
