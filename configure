@@ -627,6 +627,8 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 CURSES_LIB
+MATRIX_FONTS_FALSE
+MATRIX_FONTS_TRUE
 MKFONTDIR
 SETFONT
 CONSOLECHARS
@@ -721,7 +723,7 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
-enable_fonts
+with_fonts
 enable_debug
 '
       ac_precious_vars='build_alias
@@ -1364,8 +1366,12 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
-  --disable-fonts         Disable the cmatrix font
   --enable-debug          Enable debugging (def disabled)
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --without-fonts         Install cmatrix without cmatrix font
 
 Some influential environment variables:
   CC          C compiler command
@@ -4635,14 +4641,16 @@ if test "$ac_cv_prog_CC" = gcc -o "$ac_cv_prog_CC" = g++; then
   CFLAGS="$CFLAGS -Wall -Wno-comment"
 fi
 
-# Check whether --enable-fonts was given.
-if test "${enable_fonts+set}" = set; then :
-  enableval=$enable_fonts;
+
+# Check whether --with-fonts was given.
+if test "${with_fonts+set}" = set; then :
+  withval=$with_fonts; enable_fonts=false
+else
+  enable_fonts=true
 fi
 
 
-if test "x$enable_fonts" != "xno"; then :
-
+if test "x$enable_fonts" != xfalse; then
     # Extract the first word of "consolechars", so it can be a program name with args.
 set dummy consolechars; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -4941,7 +4949,6 @@ $as_echo "$as_me: WARNING:
 " >&2;}
 	  fi
       fi
-
 fi
 
 
@@ -4949,6 +4956,14 @@ LIBS="$LIBS $CURSES_LIB"
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug;
+fi
+
+ if test x$enable_fonts = xtrue; then
+  MATRIX_FONTS_TRUE=
+  MATRIX_FONTS_FALSE='#'
+else
+  MATRIX_FONTS_TRUE='#'
+  MATRIX_FONTS_FALSE=
 fi
 
 
@@ -5086,6 +5101,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MATRIX_FONTS_TRUE}" && test -z "${MATRIX_FONTS_FALSE}"; then
+  as_fn_error $? "conditional \"MATRIX_FONTS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

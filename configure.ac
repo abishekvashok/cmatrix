@@ -60,9 +60,9 @@ if test "$ac_cv_prog_CC" = gcc -o "$ac_cv_prog_CC" = g++; then
 fi
 
 dnl cmatrix terminal font disable option (default enabled)
-AC_ARG_ENABLE([fonts], AS_HELP_STRING([--disable-fonts], [Disable the cmatrix font]))
+AC_ARG_WITH([fonts], AS_HELP_STRING([--without-fonts], [Install cmatrix without cmatrix font]), [enable_fonts=false], [enable_fonts=true])
 
-AS_IF([test "x$enable_fonts" != "xno"], [
+if test "x$enable_fonts" != xfalse; then
   dnl Check for consolechars and setfonts
   AC_PATH_PROG(CONSOLECHARS, consolechars, "", $PATH:/usr/bin:/usr/local/bin/sbin:/usr/sbin)
   AC_PATH_PROG(SETFONT, setfont, "", $PATH:/usr/bin:/usr/local/bin/sbin:/usr/sbin)
@@ -121,12 +121,13 @@ AS_IF([test "x$enable_fonts" != "xno"], [
 ])
 	  fi
       fi
-])
+fi
 
 dnl Parse any configure options
 
 LIBS="$LIBS $CURSES_LIB"
 AC_ARG_ENABLE(debug, [  --enable-debug          Enable debugging (def disabled)],)
+AM_CONDITIONAL([MATRIX_FONTS], [test x$enable_fonts = xtrue])
 
 AC_SUBST(CURSES_LIB)
 
