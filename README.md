@@ -1,4 +1,3 @@
-[![Stories in Ready](https://badge.waffle.io/abishekvashok/cmatrix.png?label=ready&title=Ready)](https://waffle.io/abishekvashok/cmatrix?utm_source=badge)
 # CMatrix
 
 CMatrix is based on the screensaver from The Matrix website. It shows text
@@ -11,6 +10,8 @@ control-c (Ctrl+C) or by pressing q.  If you wish for more of a screen saver
 effect, you must specify -s on the command line. For usage, use `cmatrix -h`.
 
 [![Build Status](https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master)](https://travis-ci.org/abishekvashok/cmatrix)
+[![Stories in Ready](https://badge.waffle.io/abishekvashok/cmatrix.png?label=ready&title=Ready)](https://waffle.io/abishekvashok/cmatrix?utm_source=badge)
+
 ### Dependencies
 You'll probably need a decent ncurses library to get this to work. I
 have provided a binary that depends on ncurses 4.2 & glibc6.
