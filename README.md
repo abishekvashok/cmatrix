@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/abishekvashok/cmatrix.png?label=ready&title=Ready)](https://waffle.io/abishekvashok/cmatrix?utm_source=badge)
 # CMatrix
 
 CMatrix is based on the screensaver from The Matrix website. It shows text
