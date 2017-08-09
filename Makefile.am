@@ -14,7 +14,7 @@ EXTRA_DIST =	COPYING INSTALL install-sh \
 		matrix.psf.gz mtx.pcf cmatrix.1 cmatrix.spec
 
 install-data-local:
-	if test $(BUILD_FONTS) = 1; then \
+	@if test $(BUILD_FONTS) = 1; then \
 		if test -d /usr/share/consolefonts; then \
 	    		echo " Installing matrix fonts in /usr/share/consolefonts..."; \
 	    		$(INSTALL_DATA) $(srcdir)/matrix.fnt /usr/share/consolefonts; \
