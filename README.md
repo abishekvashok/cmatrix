@@ -1,7 +1,7 @@
 # CMatrix
 
 CMatrix is based on the screensaver from The Matrix website. It shows text
-flying in and out in a terminal like as seen in "The Matrix" move. It works
+flying in and out in a terminal like as seen in "The Matrix" movie. It works
 with terminal settings up to 132x300 and can scroll lines all at the same
 rate or asynchronously and at a user-defined speed.
 
