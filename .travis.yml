@@ -6,7 +6,14 @@ sudo: required
 
 compiler: gcc
 
+env:
+  - CONFIGURE_CMD=configure
+  - CONFIGURE_CMD=cmake
+
 script:
-  - ./configure
+  - mkdir -p build
+  - cd build
+  - if [[ $CONFIGURE_CMD == 'configure' ]]; then export CC=${CC} && ../configure ; fi
+  - if [[ $CONFIGURE_CMD == 'cmake' ]]; then cmake -DCMAKE_C_COMPILER="${CC}" .. ; fi
   - make
 
