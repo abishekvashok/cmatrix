@@ -10,15 +10,18 @@ control-c (Ctrl+C) or by pressing q.  If you wish for more of a screen saver
 effect, you must specify -s on the command line. For usage, use `cmatrix -h`.
 
 [![Build Status](https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master)](https://travis-ci.org/abishekvashok/cmatrix)
+
 ### Dependencies
 You'll probably need a decent ncurses library to get this to work. I
 have provided a binary that depends on ncurses 4.2 & glibc6.
 
 ### Building and installing cmatrix
 To install cmatrix, in the cmatrix directory run:
-- `./configure`
-- `make`
-- `make install`
+```
+./configure
+make
+make install
+```
 
 ### Running cmatrix
 After you have installed cmatrix just run `cmatrix` to run cmatrix :)
