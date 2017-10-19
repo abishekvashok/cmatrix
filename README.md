@@ -14,7 +14,7 @@ effect, you must specify -s on the command line. For usage, use `cmatrix -h`.
 You'll probably need a decent ncurses library to get this to work. I
 have provided a binary that depends on ncurses 4.2 & glibc6.
 
-### Installing cmatrix
+### Building and installing cmatrix
 To install cmatrix, in the cmatrix directory run:
 - `./configure`
 - `./make`
