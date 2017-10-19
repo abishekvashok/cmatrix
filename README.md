@@ -17,8 +17,8 @@ have provided a binary that depends on ncurses 4.2 & glibc6.
 ### Building and installing cmatrix
 To install cmatrix, in the cmatrix directory run:
 - `./configure`
-- `./make`
-- `./make install`
+- `make`
+- `make install`
 
 ### Running cmatrix
 After you have installed cmatrix just run `cmatrix` to run cmatrix :)
