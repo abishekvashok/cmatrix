@@ -16,9 +16,24 @@ You'll probably need a decent ncurses library to get this to work. I
 have provided a binary that depends on ncurses 4.2 & glibc6.
 
 ### Building and installing cmatrix
-To install cmatrix, in the cmatrix directory run:
+To install cmatrix, use either of the following methods from within the cmatrix directory.
+
+#### using `configure`
 ```
 ./configure
+make
+make install
+```
+
+#### using CMake
+Here we also show an out-of-source build in the sub directory "build".
+```
+mkdir -p build
+cd build
+# to install to "/usr/local"
+cmake ..
+# or to install to "/usr"
+#cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
 make install
 ```
