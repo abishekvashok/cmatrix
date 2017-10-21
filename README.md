@@ -11,8 +11,7 @@ effect, you must specify -s on the command line. For usage, use `cmatrix -h`.
 
 [![Build Status](https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master)](https://travis-ci.org/abishekvashok/cmatrix)
 ### Dependencies
-You'll probably need a decent ncurses library to get this to work. I
-have provided a binary that depends on ncurses 4.2 & glibc6.
+You'll probably need a decent ncurses library to get this to work.
 
 ### Installing cmatrix
 To install cmatrix, in the cmatrix directory run:
