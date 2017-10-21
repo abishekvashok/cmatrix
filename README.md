@@ -59,5 +59,5 @@ This software is provided under the GNU GPL v3.
 
 ### Disclaimer
 We are in no way affiliated in any way with the movie "The Matrix", "Warner Bros" nor
-any of it's affiliates in any way. Just fans.
+any of its affiliates in any way, just fans.
 
