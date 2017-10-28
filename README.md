@@ -7,12 +7,11 @@ rate or asynchronously and at a user-defined speed.
 
 CMatrix by default operates in **eye candy** mode.  It must be aborted with
 control-c (Ctrl+C) or by pressing q.  If you wish for more of a screen saver
-effect, you must specify -s on the command line. For usage, use `cmatrix -h`.
+effect, you must specify `-s` on the command line. For usage info, use `cmatrix -h`.
 
 [![Build Status](https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master)](https://travis-ci.org/abishekvashok/cmatrix)
 ### Dependencies
-You'll probably need a decent ncurses library to get this to work. I
-have provided a binary that depends on ncurses 4.2 & glibc6.
+You'll probably need a decent ncurses library to get this to work.
 
 ### Installing cmatrix
 To install cmatrix, in the cmatrix directory run:
@@ -23,8 +22,8 @@ To install cmatrix, in the cmatrix directory run:
 ### Running cmatrix
 After you have installed cmatrix just run `cmatrix` to run cmatrix :)
 
-_To get the program to look most like the movie, use cmatrix -lba_
-_To get the program to look most like the Win/Mac screensaver, use cmatrix -ol_
+_To get the program to look most like the movie, use `cmatrix -lba`_
+_To get the program to look most like the Win/Mac screensaver, use `cmatrix -ol`_
 
 ### Valuable information
 If you have any suggestions/flames/patches to send, please feel free to
@@ -40,7 +39,7 @@ _Note: cmatrix is probably not particularly portable or efficient, but it wont h
 - Chris Allegretta <chrisa@asty.org> for writing cmatrix up in a fornight and giving us
   the responsibility to further improve it.
 - Krisjon Hanson and Bjoern Ganslandt for helping with bold support and 
-  Bjoern again for the cursor removal code, helping with the -u and -l
+  Bjoern again for the cursor removal code, helping with the `-u` and `-l`
   modes/flags, and Makefile improvements.
 - Adam Gurno for multi-color support.
 - Garrick West for debian consolefont dir support.
@@ -60,5 +59,5 @@ This software is provided under the GNU GPL v3.
 
 ### Disclaimer
 We are in no way affiliated in any way with the movie "The Matrix", "Warner Bros" nor
-any of it's affiliates in any way. Just fans.
+any of its affiliates in any way, just fans.
 
