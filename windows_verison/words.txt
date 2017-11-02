@@ -1,0 +1,3 @@
+Here are texts that will fly up and down. It will be read as wchar_t.So, character of Chinese or Japanese can be showed on the screen
+这是是会上下浮动的名字，会被当作wchar_t读入。所以，中国字和日本字可以在屏幕上显示出来
+ここには、上下に飛ぶテキストがあります。 wchar_tとして読み込まれます。それで、中国語や日本語の文字を画面に表示することができます
