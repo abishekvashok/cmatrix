@@ -32,6 +32,16 @@ open issues and if possible solve them in PRs via Github.
 _Note: cmatrix is probably not particularly portable or efficient, but it wont hog
 **too** much CPU time_
 
+### Captures
+
+#### Screenshots
+
+![Special Font & bold](data/img/capture_bold_font.png?raw=true "cmatrix -bx")
+
+#### Screencasts
+
+![Movie-Like Cast](data/img/capture_orig.gif?raw=true "cmatrix -xba")
+
 ### Maintainers
 - Abishek V Ashok (@abishekvashok) <abishekvashok@gmail.com> [Core]
 
