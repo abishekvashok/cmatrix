@@ -16,8 +16,8 @@ You'll probably need a decent ncurses library to get this to work.
 ### Installing cmatrix
 To install cmatrix, in the cmatrix directory run:
 - `./configure`
-- `./make`
-- `./make install`
+- `make`
+- `make install`
 
 ### Running cmatrix
 After you have installed cmatrix just run `cmatrix` to run cmatrix :)
