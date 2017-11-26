@@ -69,6 +69,7 @@ cmatrix **matrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
 int *updates = NULL; /* What does this do again? */
+volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
 
 int va_system(char *str, ...) {
 
@@ -82,7 +83,7 @@ int va_system(char *str, ...) {
 }
 
 /* What we do when we're all set to exit */
-void finish(int sigage) {
+void finish(void) {
     curs_set(1);
     clear();
     refresh();
@@ -225,8 +226,11 @@ void var_init(void) {
 
 }
 
-void handle_sigwinch(int s) {
+void sighandler(int s) {
+    signal_status = s;
+}
 
+void resize_screen(void) {
     char *tty = NULL;
     int fd = 0;
     int result = 0;
@@ -390,8 +394,8 @@ int main(int argc, char *argv[]) {
     timeout(0);
     leaveok(stdscr, TRUE);
     curs_set(0);
-    signal(SIGINT, finish);
-    signal(SIGWINCH, handle_sigwinch);
+    signal(SIGINT, sighandler);
+    signal(SIGWINCH, sighandler);
 
 if (console) {
 #ifdef HAVE_CONSOLECHARS
@@ -452,6 +456,15 @@ if (console) {
     var_init();
 
     while (1) {
+        /* Check for signals */
+        if (signal_status == SIGINT) {
+            finish();
+            /* exits */
+        }
+        if (signal_status == SIGWINCH) {
+            resize_screen();
+            signal_status = 0;
+        }
 
         count++;
         if (count > 4) {
@@ -460,11 +473,11 @@ if (console) {
 
         if ((keypress = wgetch(stdscr)) != ERR) {
             if (screensaver == 1) {
-                finish(0);
+                finish();
             } else {
                 switch (keypress) {
                 case 'q':
-                    finish(0);
+                    finish();
                     break;
                 case 'a':
                     asynch = 1 - asynch;
@@ -732,6 +745,6 @@ if (console) {
     syscmd = nmalloc(sizeof (char *) * (strlen(oldtermname) + 15));
     sprintf(syscmd, "putenv TERM=%s", oldtermname);    
     system(syscmd);
-    finish(0);
+    finish();
 }
 
