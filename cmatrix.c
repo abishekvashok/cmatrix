@@ -167,6 +167,7 @@ void var_init(void) {
     int i, j;
 
     if (matrix != NULL) {
+        free(matrix[0]);
         free(matrix);
     }
 
