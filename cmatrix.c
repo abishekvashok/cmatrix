@@ -170,9 +170,10 @@ void var_init(void) {
         free(matrix);
     }
 
-    matrix = nmalloc(sizeof(cmatrix) * (LINES + 1));
-    for (i = 0; i <= LINES; i++) {
-        matrix[i] = nmalloc(sizeof(cmatrix) * COLS);
+    matrix = nmalloc(sizeof(cmatrix *) * (LINES + 1));
+    matrix[0] = nmalloc(sizeof(cmatrix) * (LINES + 1) * COLS);
+    for (i = 1; i <= LINES; i++) {
+        matrix[i] = matrix[i - 1] + COLS;
     }
 
     if (length != NULL) {
