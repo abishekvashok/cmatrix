@@ -196,6 +196,16 @@ void var_init(void) {
     for (i = 0; i <= LINES; i++) {
         for (j = 0; j <= COLS - 1; j += 2) {
             matrix[i][j].val = -1;
+            /* I couldn't quite get how the bold attribute is used in the code,
+             * but it is used uninitialized later on (according to Valgrind and
+             * my manual inspection). I guess the default value should be 0,
+             * as setting it does not change the observable behaviour and shuts
+             * Valgrind up. Also, the code seems to expect a value of 0,
+             * although I'm not quite sure about that.
+             * In any case, there is an uninitialized use,
+             * so some default value should be set here (whatever it is).
+             */
+            matrix[i][j].bold = 0;
         }
     }
 
