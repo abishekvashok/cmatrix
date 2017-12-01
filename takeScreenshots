@@ -1,0 +1,77 @@
+#!/bin/bash
+# Produces a bunch of `cmatrix` screenshots and screencasts.
+# This script requires X and the following:
+#apt-get install rxvt byzanz
+
+# NOTE We use rxvt, as we can get a screenshot without fuss (scrollbars, menu, ...),
+#   it is fairly simple,
+#   and it supports X fonts (unlike xterm and uxterm).
+TERM_EMULATOR_BASE="rxvt +sb"
+
+CAPTURES_DIR="data/img"
+
+# Function to take a single cmatrix screenshot (takes about 3.5s to execute)
+# or optionally, a screncast of choosable length.
+function captureCMatrix()
+{
+	CAPTURE_FILE="$1"
+	CMATRIX_OPTIONS="$2"
+	# If 0 (default if no 3rd param is given),
+	# we make a screenshot instead of a screencast.
+	SCREENCAST_DURATION="${3:-0}"
+
+	if [ ${SCREENCAST_DURATION} -gt 0 ]
+	then
+		let KILL_DELAY="${SCREENCAST_DURATION} + 1"
+		CAPTURE_FILE="${CAPTURE_FILE}.gif"
+	else
+		KILL_DELAY=3
+		CAPTURE_FILE="${CAPTURE_FILE}.png"
+	fi
+	WINDOW_TITLE="CMatrix capture ${CAPTURE_FILE}"
+
+	# NOTE the "-PIPE" prevents output of the "Terminated: ..." message
+	( cmdpid=$BASHPID; ( sleep ${KILL_DELAY}; kill -PIPE $cmdpid ) & exec ${TERM_EMULATOR_BASE} -name "${WINDOW_TITLE}" -title "${WINDOW_TITLE}" -e bash -c "
+		if [ ${SCREENCAST_DURATION} -gt 0 ]
+		then
+			# Take screencast (animated GIF)
+
+			# Get this windows X-window-info
+			myXwininfo=\$(xwininfo -name \"${WINDOW_TITLE}\")
+			# Extract location and size
+			read X < <(awk -F: '/Absolute upper-left X/{print \$2}' <<< \"\$myXwininfo\")
+			read Y < <(awk -F: '/Absolute upper-left Y/{print \$2}' <<< \"\$myXwininfo\")
+			read W < <(awk -F: '/Width/{print \$2}' <<< \"\$myXwininfo\")
+			read H < <(awk -F: '/Height/{print \$2}' <<< \"\$myXwininfo\")
+			# Record a screencast as gif
+			byzanz-record -c --delay=0 --duration=${SCREENCAST_DURATION} --x=\$X --y=\$Y --width=\$W --height=\$H "${CAPTURE_FILE}" &
+		else
+			# Take screen-shot (PNG image)
+
+			# Take screenshot in 2 seconds
+			( sleep 2 ; xwd -nobdrs -name \"${WINDOW_TITLE}\" -silent | xwdtopnm 2> /dev/null | pnmtopng 2> /dev/null > ${CAPTURE_FILE} ) &
+		fi
+
+		# Run cmatrix until the process gets killed
+		cmatrix ${CMATRIX_OPTIONS}
+		" )
+}
+
+CMD_CS="captureCMatrix"
+CAPTURE_FILE_BASE="${CAPTURES_DIR}/capture_"
+mkdir -p "${CAPTURES_DIR}"
+
+# Capture a screen session ("video"/animated GIF)
+${CMD_CS} "${CAPTURE_FILE_BASE}orig" "-xba" "5"
+${CMD_CS} "${CAPTURE_FILE_BASE}rainbow" "-xbar" "5"
+
+# From here on, we take several screenshots with different arguments.
+${CMD_CS} "${CAPTURE_FILE_BASE}default" ""
+${CMD_CS} "${CAPTURE_FILE_BASE}bold" "-b"
+${CMD_CS} "${CAPTURE_FILE_BASE}bold_font" "-bx"
+for color in green red blue white yellow cyan magenta black
+do
+	${CMD_CS} "${CAPTURE_FILE_BASE}bold_C_${color}" "-b -C ${color}"
+done
+${CMD_CS} "${CAPTURE_FILE_BASE}bold_rainbow" "-b -r"
+
