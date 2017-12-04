@@ -233,7 +233,7 @@ void sighandler(int s) {
 }
 
 void resize_screen(void) {
-    char *tty = NULL;
+    char *tty;
     int fd = 0;
     int result = 0;
     struct winsize win;
