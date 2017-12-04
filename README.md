@@ -10,14 +10,32 @@ control-c (Ctrl+C) or by pressing q.  If you wish for more of a screen saver
 effect, you must specify `-s` on the command line. For usage info, use `cmatrix -h`.
 
 [![Build Status](https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master)](https://travis-ci.org/abishekvashok/cmatrix)
+
 ### Dependencies
 You'll probably need a decent ncurses library to get this to work.
 
-### Installing cmatrix
-To install cmatrix, in the cmatrix directory run:
-- `./configure`
-- `make`
-- `make install`
+### Building and installing cmatrix
+To install cmatrix, use either of the following methods from within the cmatrix directory.
+
+#### Using `configure` (recommended for most linux user)
+```
+./configure
+make
+make install
+```
+
+#### Using CMake
+Here we also show an out-of-source build in the sub directory "build".
+```
+mkdir -p build
+cd build
+# to install to "/usr/local"
+cmake ..
+# or to install to "/usr"
+#cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+make
+make install
+```
 
 ### Running cmatrix
 After you have installed cmatrix just run `cmatrix` to run cmatrix :)

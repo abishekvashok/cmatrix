@@ -32,7 +32,9 @@
 #include <termios.h>
 #include <signal.h>
 
+#ifndef EXCLUDE_CONFIG_H
 #include "config.h"
+#endif
 
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
