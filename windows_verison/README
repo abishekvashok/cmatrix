@@ -1,0 +1,2 @@
+This folder contains a cmatrix that runs in windows, and let's name it win_cmatrix.
+Different from cmatrix, texts fly up and down in win_cmatrix are  stored in file (maybe words.txt).
