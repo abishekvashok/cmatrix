@@ -19,6 +19,7 @@ To install cmatrix, use either of the following methods from within the cmatrix 
 
 #### Using `configure` (recommended for most linux user)
 ```
+autoreconf -i  # skip if using released tarball
 ./configure
 make
 make install

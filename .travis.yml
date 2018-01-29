@@ -13,10 +13,13 @@ env:
   - CONFIGURE_CMD=cmake
 
 script:
-  - mkdir -p build
-  - cd build
-  - touch aclocal.m4 configure 
-  - if [[ $CONFIGURE_CMD == 'configure' ]]; then export CC=${CC} && ../configure ; fi
-  - if [[ $CONFIGURE_CMD == 'cmake' ]]; then cmake -DCMAKE_C_COMPILER="${CC}" .. ; fi
+  - |
+      if [[ $CONFIGURE_CMD == 'configure' ]]; then
+        export CC=${CC} && autoreconf -i && ./configure
+      fi
+  - |
+      if [[ $CONFIGURE_CMD == 'cmake' ]]; then
+        mkdir build && cd build && cmake -DCMAKE_C_COMPILER="${CC}" ..
+      fi
   - make
 
