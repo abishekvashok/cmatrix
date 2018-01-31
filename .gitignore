@@ -9,6 +9,7 @@ config.*
 compile
 configure
 configure.lineno
+cmatrix.spec
 depcomp
 install-sh
 missing
