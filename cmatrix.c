@@ -297,7 +297,7 @@ int main(int argc, char *argv[]) {
     int pause = 0;
 
     char *oldtermname;
-    char *syscmd = NULL;
+    char *oldterm = NULL;
 
     time_t t;
     srand((unsigned) time(&t));
@@ -745,9 +745,11 @@ if (console) {
         }
         napms(update * 10);
     }
-    syscmd = nmalloc(sizeof (char *) * (strlen(oldtermname) + 15));
-    sprintf(syscmd, "putenv TERM=%s", oldtermname);    
-    system(syscmd);
+    if (force && strcmp(oldtermname, getenv("TERM"))) {
+        oldterm = nmalloc(sizeof (char *) * (strlen(oldtermname) + 6));
+        sprintf(oldterm, "TERM=%s", oldtermname);
+        putenv(oldterm);
+    }
     finish();
 }
 
