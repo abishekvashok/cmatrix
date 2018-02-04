@@ -1,6 +1,8 @@
 language: c
 
-os: linux
+os:
+  - linux
+  - osx
 
 sudo: required
 
