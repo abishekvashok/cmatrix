@@ -297,8 +297,7 @@ int main(int argc, char *argv[]) {
     char *oldtermname;
     char *oldterm = NULL;
 
-    time_t t;
-    srand((unsigned) time(&t));
+    srand((unsigned) time(NULL));
 
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
