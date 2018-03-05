@@ -74,11 +74,10 @@ volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
 int va_system(char *str, ...) {
 
     va_list ap;
-    static const unsigned int buf_size = 133;
-    char buf[buf_size];
+    char buf[133];
 
     va_start(ap, str);
-    vsnprintf(buf, buf_size - 1, str, ap);
+    vsnprintf(buf, sizeof(buf), str, ap);
     va_end(ap);
     return system(buf);
 }
