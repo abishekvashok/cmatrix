@@ -741,11 +741,6 @@ if (console) {
         }
         napms(update * 10);
     }
-    if (force && strcmp(oldtermname, getenv("TERM"))) {
-        oldterm = nmalloc(sizeof (char *) * (strlen(oldtermname) + 6));
-        sprintf(oldterm, "TERM=%s", oldtermname);
-        putenv(oldterm);
-    }
     finish();
 }
 
