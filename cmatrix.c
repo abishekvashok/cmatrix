@@ -293,11 +293,7 @@ int main(int argc, char *argv[]) {
     int randmin = 0;
     int pause = 0;
 
-    char *oldtermname;
-    char *oldterm = NULL;
-
     srand((unsigned) time(NULL));
-
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
@@ -379,11 +375,9 @@ int main(int argc, char *argv[]) {
         bold = 0;
     }
 
-    oldtermname = getenv("TERM");
     if (force && strcmp("linux", getenv("TERM"))) {
-        /* Portability wins out here, apparently putenv is much more
-           common on non-Linux than setenv */
-        putenv("TERM=linux");
+        /* setenv is much more safe to use than putenv */
+        setenv("TERM", "linux", 1);
     }
     initscr();
     savetty();
