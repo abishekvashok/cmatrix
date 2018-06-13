@@ -249,20 +249,20 @@ void resize_screen(void) {
         return;
     }
 
-    COLS = win.ws_col;
-    LINES = win.ws_row;
+    int cols = win.ws_col;
+    int lines = win.ws_row;
 
-    if(LINES <10){
-        LINES = 10;
+    if(lines <10){
+        lines = 10;
     }
-    if(COLS <10){
-        COLS = 10;
+    if(cols <10){
+        cols = 10;
     }
 
 #ifdef HAVE_RESIZETERM
-    resizeterm(LINES, COLS);
+    resizeterm(lines, cols);
 #ifdef HAVE_WRESIZE
-    if (wresize(stdscr, LINES, COLS) == ERR) {
+    if (wresize(stdscr, lines, cols) == ERR) {
         c_die("Cannot resize window!");
     }
 #endif /* HAVE_WRESIZE */
