@@ -40,6 +40,11 @@ fi
 
 if eval "test x$CURSES_LIB_NAME = x"
 then
+    AC_CHECK_LIB(tinfo, tgetent, CURSES_LIB="-ltinfo" CURSES_LIB_NAME=tinfo)
+fi
+
+if eval "test x$CURSES_LIB_NAME = x"
+then
     AC_MSG_WARN([
 *** No termcap lib available, consider getting the official ncurses
 *** distribution from ftp://ftp.gnu.org/pub/gnu/ncurses if you get
