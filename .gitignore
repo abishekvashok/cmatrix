@@ -27,4 +27,5 @@ cscope.files
 cmatrix
 *.o
 *.core
-
+CMakeCache.txt
+CMakeFiles/
