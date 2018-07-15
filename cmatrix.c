@@ -59,7 +59,6 @@
 /* Matrix typedef */
 typedef struct cmatrix {
     int val;
-    int bold;
 } cmatrix;
 
 /* Global variables */
@@ -164,7 +163,7 @@ void *nmalloc(size_t howmuch) {
 }
 
 /* Initialize the global variables */
-void var_init(void) {
+void var_init() {
     int i, j;
 
     if (matrix != NULL) {
@@ -197,16 +196,6 @@ void var_init(void) {
     for (i = 0; i <= LINES; i++) {
         for (j = 0; j <= COLS - 1; j += 2) {
             matrix[i][j].val = -1;
-            /* I couldn't quite get how the bold attribute is used in the code,
-             * but it is used uninitialized later on (according to Valgrind and
-             * my manual inspection). I guess the default value should be 0,
-             * as setting it does not change the observable behaviour and shuts
-             * Valgrind up. Also, the code seems to expect a value of 0,
-             * although I'm not quite sure about that.
-             * In any case, there is an uninitialized use,
-             * so some default value should be set here (whatever it is).
-             */
-            matrix[i][j].bold = 0;
         }
     }
 
@@ -280,7 +269,7 @@ int main(int argc, char *argv[]) {
     int count = 0;
     int screensaver = 0;
     int asynch = 0;
-    int bold = -1;
+    int bold = 0;
     int force = 0;
     int firstcoldone = 0;
     int oldstyle = 0;
@@ -306,7 +295,7 @@ int main(int argc, char *argv[]) {
             asynch = 1;
             break;
         case 'b':
-            if (bold != 2 && bold != 0) {
+            if (bold != 2 && bold != -1) {
                 bold = 1;
             }
             break;
@@ -346,7 +335,7 @@ int main(int argc, char *argv[]) {
             console = 1;
             break;
         case 'n':
-            bold = 0;
+            bold = -1;
             break;
         case 'h':
         case '?':
@@ -368,11 +357,6 @@ int main(int argc, char *argv[]) {
              rainbow = 1;
              break;
         }
-    }
-
-    /* If bold hasn't been turned on or off yet, assume off */
-    if (bold == -1) {
-        bold = 0;
     }
 
     if (force && strcmp("linux", getenv("TERM"))) {
@@ -580,10 +564,6 @@ if (console) {
                         length[j] = (int) rand() % (LINES - 3) + 3;
                         matrix[0][j].val = (int) rand() % randnum + randmin;
 
-                        if ((int) rand() % 2 == 1) {
-                            matrix[0][j].bold = 2;
-                        }
-
                         spaces[j] = (int) rand() % LINES + 1;
                     }
                     i = 0;
@@ -612,16 +592,11 @@ if (console) {
 
                         if (i > LINES) {
                             matrix[z][j].val = ' ';
-                            matrix[LINES][j].bold = 1;
                             continue;
                         }
 
                         matrix[i][j].val = (int) rand() % randnum + randmin;
 
-                        if (matrix[i - 1][j].bold == 2) {
-                            matrix[i - 1][j].bold = 1;
-                            matrix[i][j].bold = 2;
-                        }
 
                         /* If we're at the top of the collumn and it's reached its
                            full length (about to start moving down), we do this
@@ -648,7 +623,7 @@ if (console) {
             for (i = y; i <= z; i++) {
                 move(i - y, j);
 
-                if (matrix[i][j].val == 0 || matrix[i][j].bold == 2) {
+                if (matrix[i][j].val == 0) {
                     if (console || xwindow) {
                         attron(A_ALTCHARSET);
                     }
