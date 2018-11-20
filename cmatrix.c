@@ -64,6 +64,7 @@ typedef struct cmatrix {
 /* Global variables */
 int console = 0;
 int xwindow = 0;
+int lock = 0;
 cmatrix **matrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
@@ -132,6 +133,7 @@ void usage(void) {
     printf(" -B: All bold characters (overrides -b)\n");
     printf(" -f: Force the linux $TERM type to be on\n");
     printf(" -l: Linux mode (uses matrix console font)\n");
+    printf(" -L: Lock mode (can be closed from another terminal)\n");
     printf(" -o: Use old-style scrolling\n");
     printf(" -h: Print usage and exit\n");
     printf(" -n: No bold characters (overrides -b and -B, default)\n");
@@ -286,7 +288,7 @@ int main(int argc, char *argv[]) {
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBfhlnrosxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBfhlLnrosxVu:C:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -334,6 +336,9 @@ int main(int argc, char *argv[]) {
         case 'l':
             console = 1;
             break;
+        case 'L':
+            lock = 1;
+            break;
         case 'n':
             bold = -1;
             break;
@@ -373,6 +378,7 @@ int main(int argc, char *argv[]) {
     curs_set(0);
     signal(SIGINT, sighandler);
     signal(SIGWINCH, sighandler);
+    signal(SIGTSTP, sighandler);
 
 if (console) {
 #ifdef HAVE_CONSOLECHARS
@@ -435,12 +441,18 @@ if (console) {
     while (1) {
         /* Check for signals */
         if (signal_status == SIGINT) {
-            finish();
+            if(lock != 1)
+                finish();
             /* exits */
         }
         if (signal_status == SIGWINCH) {
             resize_screen();
             signal_status = 0;
+        }
+
+        if(signal_status == SIGTSTP){
+            if(lock != 1)
+                    finish();
         }
 
         count++;
@@ -454,7 +466,8 @@ if (console) {
             } else {
                 switch (keypress) {
                 case 'q':
-                    finish();
+                    if(lock != 1)
+                        finish();
                     break;
                 case 'a':
                     asynch = 1 - asynch;
@@ -464,6 +477,9 @@ if (console) {
                     break;
                 case 'B':
                     bold = 2;
+                    break;
+                case 'L':
+                    lock = 1;
                     break;
                 case 'n':
                     bold = 0;
@@ -708,6 +724,34 @@ if (console) {
                 }
             }
         }
+
+        //Check if computer is locked
+        if(lock == 1){
+
+            //Add our message to the screen
+            char *msg = "Computer locked.";
+            int msg_x = LINES/2;
+            int msg_y = COLS/2 - strlen(msg)/2;
+
+            //Add space before message
+            move(msg_x-1, msg_y-2);
+            for(int i = 0; i < strlen(msg)+4; i++)
+                addch(' ');
+
+            //Write message
+            move(msg_x, msg_y-2);
+            addch(' ');
+            addch(' ');
+            addstr(msg);
+            addch(' ');
+            addch(' ');
+
+            //Add space after message
+            move(msg_x+1, msg_y-2);
+            for(int i = 0; i < strlen(msg)+4; i++)
+                addch(' ');
+        }
+
         napms(update * 10);
     }
     finish();
