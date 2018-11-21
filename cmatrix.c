@@ -732,10 +732,11 @@ if (console) {
             char *msg = "Computer locked.";
             int msg_x = LINES/2;
             int msg_y = COLS/2 - strlen(msg)/2;
+            int i = 0;
 
             //Add space before message
             move(msg_x-1, msg_y-2);
-            for(int i = 0; i < strlen(msg)+4; i++)
+            for(i = 0; i < strlen(msg)+4; i++)
                 addch(' ');
 
             //Write message
@@ -748,7 +749,7 @@ if (console) {
 
             //Add space after message
             move(msg_x+1, msg_y-2);
-            for(int i = 0; i < strlen(msg)+4; i++)
+            for(i = 0; i < strlen(msg)+4; i++)
                 addch(' ');
         }
 
