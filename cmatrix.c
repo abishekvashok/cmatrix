@@ -377,6 +377,7 @@ int main(int argc, char *argv[]) {
     leaveok(stdscr, TRUE);
     curs_set(0);
     signal(SIGINT, sighandler);
+    signal(SIGQUIT, sighandler);
     signal(SIGWINCH, sighandler);
     signal(SIGTSTP, sighandler);
 
@@ -440,7 +441,7 @@ if (console) {
 
     while (1) {
         /* Check for signals */
-        if (signal_status == SIGINT) {
+        if (signal_status == SIGINT || signal_status == SIGQUIT) {
             if(lock != 1)
                 finish();
             /* exits */
