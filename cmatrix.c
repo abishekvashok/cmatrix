@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <signal.h>
+#include <locale.h>
 
 #ifndef EXCLUDE_CONFIG_H
 #include "config.h"
@@ -127,7 +128,7 @@ void c_die(char *msg, ...) {
 }
 
 void usage(void) {
-    printf(" Usage: cmatrix -[abBfhlsVx] [-u delay] [-C color]\n");
+    printf(" Usage: cmatrix -[abBfhlsmVx] [-u delay] [-C color]\n");
     printf(" -a: Asynchronous scroll\n");
     printf(" -b: Bold characters on\n");
     printf(" -B: All bold characters (overrides -b)\n");
@@ -143,6 +144,7 @@ void usage(void) {
     printf(" -u delay (0 - 10, default 4): Screen update delay\n");
     printf(" -C [color]: Use this color for matrix (default green)\n");
     printf(" -r: rainbow mode\n");
+    printf(" -m: lambda mode\n");
 }
 
 void version(void) {
@@ -280,15 +282,17 @@ int main(int argc, char *argv[]) {
     int highnum = 0;
     int mcolor = COLOR_GREEN;
     int rainbow = 0;    
+    int lambda = 0;
     int randnum = 0;
     int randmin = 0;
     int pause = 0;
 
     srand((unsigned) time(NULL));
+    setlocale(LC_ALL, "");
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBfhlLnrosxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBfhlLnrosmxVu:C:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -360,6 +364,9 @@ int main(int argc, char *argv[]) {
             exit(0);
         case 'r':
              rainbow = 1;
+             break;
+        case 'm':
+             lambda = 1;
              break;
         }
     }
@@ -519,6 +526,9 @@ if (console) {
                     break;
                 case 'r':
                      rainbow = 1;
+                     break;
+                case 'm':
+                     lambda = !lambda;
                      break;
                 case '^':
                     mcolor = COLOR_CYAN;
@@ -710,6 +720,8 @@ if (console) {
                         }
                         if (matrix[i][j].val == -1) {
                             addch(' ');
+                        } else if (lambda && matrix[i][j].val != ' ') {
+                            addstr("λ");
                         } else {
                             addch(matrix[i][j].val);
                         }
