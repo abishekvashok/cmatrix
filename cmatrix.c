@@ -60,6 +60,7 @@
 /* Matrix typedef */
 typedef struct cmatrix {
     int val;
+    bool is_head;
 } cmatrix;
 
 /* Global variables */
@@ -177,6 +178,14 @@ void var_init() {
     matrix[0] = nmalloc(sizeof(cmatrix) * (LINES + 1) * COLS);
     for (i = 1; i <= LINES; i++) {
         matrix[i] = matrix[i - 1] + COLS;
+    }
+
+    for (i = 0; i < LINES; ++i)
+    {
+        for (j = 0; j < COLS; ++j)
+        {
+            matrix[i][j].is_head = false;
+        }
     }
 
     if (length != NULL) {
@@ -620,6 +629,7 @@ if (console) {
                         y = 0;
                         while (i <= LINES && (matrix[i][j].val != ' ' &&
                                matrix[i][j].val != -1)) {
+                            matrix[i][j].is_head = false;
                             i++;
                             y++;
                         }
@@ -630,7 +640,7 @@ if (console) {
                         }
 
                         matrix[i][j].val = (int) rand() % randnum + randmin;
-
+                        matrix[i][j].is_head = true;
 
                         /* If we're at the top of the collumn and it's reached its
                            full length (about to start moving down), we do this
@@ -657,7 +667,7 @@ if (console) {
             for (i = y; i <= z; i++) {
                 move(i - y, j);
 
-                if (matrix[i][j].val == 0) {
+                if (matrix[i][j].is_head && !rainbow) {
                     if (console || xwindow) {
                         attron(A_ALTCHARSET);
                     }
@@ -683,8 +693,7 @@ if (console) {
                         attroff(A_ALTCHARSET);
                     }
                 } else {
-
-                    if(rainbow){
+                    if(rainbow) {
                         int randomColor = rand() % 6;
 
                         switch(randomColor){
