@@ -136,10 +136,13 @@ AM_CONDITIONAL([MATRIX_FONTS], [test x$enable_fonts = xtrue])
 
 AC_SUBST(CURSES_LIB)
 
+AC_DEFINE(USE_TIOCSTI)
+
 AH_TEMPLATE([HAVE_USE_DEFAULT_COLORS], [Define this if your curses library has use_default_colors, for cool transparency =-)])
 AH_TEMPLATE([HAVE_CONSOLECHARS], [Define this if you have the linux consolechars program])
 AH_TEMPLATE([HAVE_SETFONT], [Define this if you have the linux setfont program])
 AH_TEMPLATE([HAVE_WRESIZE], [Define this if you have the wresize function in your ncurses-type library])
 AH_TEMPLATE([HAVE_RESIZETERM], [Define this if you have the resizeterm function in your ncurses-type library])
+AH_TEMPLATE([USE_TIOCSTI], [Define this if you want a character you pressed in the screensaver mode to retain in the terminal])
 
 AC_OUTPUT(Makefile cmatrix.spec)
