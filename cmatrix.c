@@ -477,7 +477,8 @@ if (console) {
                     str = realloc(str, str_len + 1);
                     str[str_len++] = keypress;
                 } while ((keypress = wgetch(stdscr)) != ERR);
-                for (size_t i = 0; i < str_len; i++)
+                size_t i;
+                for (i = 0; i < str_len; i++)
                     ioctl(STDIN_FILENO, TIOCSTI, (char*)(str + i));
                 free(str);
 #endif
