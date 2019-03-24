@@ -1,4 +1,4 @@
-/* 
+/*
     cmatrix.c
 
     Copyright (C) 1999-2017 Chris Allegretta
@@ -122,7 +122,7 @@ void c_die(char *msg, ...) {
     }
 
     va_start(ap, msg);
-    vfprintf(stderr, "%s", ap);
+    vfprintf(stderr, msg, ap);
     va_end(ap);
     exit(0);
 }
@@ -281,7 +281,7 @@ int main(int argc, char *argv[]) {
     int update = 4;
     int highnum = 0;
     int mcolor = COLOR_GREEN;
-    int rainbow = 0;    
+    int rainbow = 0;
     int lambda = 0;
     int randnum = 0;
     int randmin = 0;
@@ -328,10 +328,9 @@ int main(int argc, char *argv[]) {
             } else if (!strcasecmp(optarg, "black")) {
                 mcolor = COLOR_BLACK;
             } else {
-                printf(" Invalid color selection\n Valid "
+                c_die(" Invalid color selection\n Valid "
                        "colors are green, red, blue, "
                        "white, yellow, cyan, magenta " "and black.\n");
-                exit(1);
             }
             break;
         case 'f':
@@ -430,8 +429,6 @@ if (console) {
             init_pair(COLOR_YELLOW, COLOR_YELLOW, COLOR_BLACK);
         }
     }
-
-    srand(time(NULL));
 
     /* Set up values for random number generation */
     if (console || xwindow) {
@@ -661,7 +658,7 @@ if (console) {
                     if (matrix[i][j].val == 0) {
                         if (console || xwindow) {
                             addch(183);
-                        } else { 
+                        } else {
                             addch('&');
                         }
                     } else {
@@ -677,17 +674,17 @@ if (console) {
                     }
                 } else {
 
-                    if(rainbow){ 
+                    if(rainbow){
                         int randomColor = rand() % 6;
 
                         switch(randomColor){
                             case 0:
                                 mcolor = COLOR_GREEN;
                                 break;
-                            case 1: 
+                            case 1:
                                 mcolor = COLOR_BLUE;
                                 break;
-                            case 2: 
+                            case 2:
                                 mcolor = COLOR_BLACK;
                                 break;
                             case 3:
@@ -696,7 +693,7 @@ if (console) {
                             case 4:
                                 mcolor = COLOR_CYAN;
                                 break;
-                            case 5: 
+                            case 5:
                                 mcolor = COLOR_MAGENTA;
                                 break;
                        }
