@@ -90,15 +90,13 @@ void finish(void) {
     refresh();
     resetty();
     endwin();
-#ifdef HAVE_CONSOLECHARS
     if (console) {
+#ifdef HAVE_CONSOLECHARS
         va_system("consolechars -d");
-    }
 #elif defined(HAVE_SETFONT)
-    if (console){
         va_system("setfont");
-    }
 #endif
+    }
     exit(0);
 }
 
@@ -392,7 +390,7 @@ if (console) {
         if (va_system("consolechars -f matrix") != 0) {
             c_die
                 (" There was an error running consolechars. Please make sure the\n"
-                 " consolechars program is in your $PATH.  Try running \"setfont matrix\" by hand.\n");
+                 " consolechars program is in your $PATH.  Try running \"consolechars -f matrix\" by hand.\n");
         }
 #elif defined(HAVE_SETFONT)
         if (va_system("setfont matrix") != 0) {
@@ -400,6 +398,8 @@ if (console) {
                 (" There was an error running setfont. Please make sure the\n"
                  " setfont program is in your $PATH.  Try running \"setfont matrix\" by hand.\n");
         }
+#else
+        c_die(" Unable to use both \"setfont\" and \"consolechars\".\n");
 #endif
 }
     if (has_colors()) {
