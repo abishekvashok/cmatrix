@@ -14,6 +14,7 @@ set(MKFONTDIR "/usr/bin/mkfontdir")
 
 add_definitions(-DEXCLUDE_CONFIG_H)
 add_definitions(-DVERSION="${VERSION}")
+add_definitions(-DUSE_TIOCSTI)
 
 include(CheckIncludeFiles)
 check_include_files("sys/ioctl.h" HAVE_SYS_IOCTL_H)

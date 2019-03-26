@@ -467,6 +467,18 @@ if (console) {
 
         if ((keypress = wgetch(stdscr)) != ERR) {
             if (screensaver == 1) {
+#ifdef USE_TIOCSTI
+                char *str = malloc(0);
+                size_t str_len = 0;
+                do {
+                    str = realloc(str, str_len + 1);
+                    str[str_len++] = keypress;
+                } while ((keypress = wgetch(stdscr)) != ERR);
+                size_t i;
+                for (i = 0; i < str_len; i++)
+                    ioctl(STDIN_FILENO, TIOCSTI, (char*)(str + i));
+                free(str);
+#endif
                 finish();
             } else {
                 switch (keypress) {
