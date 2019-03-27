@@ -127,10 +127,11 @@ void c_die(char *msg, ...) {
 }
 
 void usage(void) {
-    printf(" Usage: cmatrix -[abBfhlsmVx] [-u delay] [-C color]\n");
+    printf(" Usage: cmatrix -[abBcfhlsmVx] [-u delay] [-C color]\n");
     printf(" -a: Asynchronous scroll\n");
     printf(" -b: Bold characters on\n");
     printf(" -B: All bold characters (overrides -b)\n");
+    printf(" -c: Use Japanese characters as seen in the original matrix. Requires appropriate fonts\n");
     printf(" -f: Force the linux $TERM type to be on\n");
     printf(" -l: Linux mode (uses matrix console font)\n");
     printf(" -L: Lock mode (can be closed from another terminal)\n");
@@ -285,13 +286,14 @@ int main(int argc, char *argv[]) {
     int randnum = 0;
     int randmin = 0;
     int pause = 0;
+    int classic = 0;
 
     srand((unsigned) time(NULL));
     setlocale(LC_ALL, "");
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBfhlLnrosmxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxVu:C:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -329,6 +331,9 @@ int main(int argc, char *argv[]) {
                        "colors are green, red, blue, "
                        "white, yellow, cyan, magenta " "and black.\n");
             }
+            break;
+        case 'c':
+            classic = 1;
             break;
         case 'f':
             force = 1;
@@ -430,7 +435,12 @@ if (console) {
     }
 
     /* Set up values for random number generation */
-    if (console || xwindow) {
+    if(classic) {
+        /* Japanese character unicode range [they are seen in the original cmatrix] */
+        randnum = 63;
+        randmin = 12288;
+        highnum = 12351;
+    } else if (console || xwindow) {
         randnum = 51;
         randmin = 166;
         highnum = 217;
