@@ -40,6 +40,11 @@ fi
 
 if eval "test x$CURSES_LIB_NAME = x"
 then
+    AC_CHECK_LIB(tinfo, tgetent, CURSES_LIB="-ltinfo" CURSES_LIB_NAME=tinfo)
+fi
+
+if eval "test x$CURSES_LIB_NAME = x"
+then
     AC_MSG_WARN([
 *** No termcap lib available, consider getting the official ncurses
 *** distribution from ftp://ftp.gnu.org/pub/gnu/ncurses if you get
@@ -59,13 +64,17 @@ if test "$ac_cv_prog_CC" = gcc -o "$ac_cv_prog_CC" = g++; then
   CFLAGS="$CFLAGS -Wall -Wno-comment"
 fi
 
-dnl Check for consolechars and setfonts
-AC_PATH_PROG(CONSOLECHARS, consolechars, "", $PATH:/usr/bin:/usr/local/bin/sbin:/usr/sbin)
-AC_PATH_PROG(SETFONT, setfont, "", $PATH:/usr/bin:/usr/local/bin/sbin:/usr/sbin)
+dnl cmatrix terminal font disable option (default enabled)
+AC_ARG_WITH([fonts], AS_HELP_STRING([--without-fonts], [Install cmatrix without cmatrix font]), [enable_fonts=false], [enable_fonts=true])
 
-if test x$CONSOLECHARS = x; then
-    if test x$SETFONT = x; then
-	AC_MSG_WARN([
+if test "x$enable_fonts" != xfalse; then
+  dnl Check for consolechars and setfonts
+  AC_PATH_PROG(CONSOLECHARS, consolechars, "", $PATH:/usr/bin:/usr/local/bin/sbin:/usr/sbin)
+  AC_PATH_PROG(SETFONT, setfont, "", $PATH:/usr/bin:/usr/local/bin/sbin:/usr/sbin)
+
+  if test x$CONSOLECHARS = x; then
+      if test x$SETFONT = x; then
+	  AC_MSG_WARN([
 
 *** neither the consolechars nor the setfont program was not found.  You
 *** will not be able to see the characters in the matrix font in the
@@ -73,22 +82,22 @@ if test x$CONSOLECHARS = x; then
 *** using Linux, the package containing this program is usually called
 *** kbd, kbd-utils, or console-utils
 ])	
-    else
-	AC_DEFINE_UNQUOTED(HAVE_SETFONT, $SETFONT)
-    fi
-else
-    AC_DEFINE_UNQUOTED(HAVE_CONSOLECHARS, $CONSOLECHARS)
-fi
+      else
+	  AC_DEFINE_UNQUOTED(HAVE_SETFONT, $SETFONT)
+      fi
+  else
+      AC_DEFINE_UNQUOTED(HAVE_CONSOLECHARS, $CONSOLECHARS)
+  fi
 
-if test x$CONSOLECHARS != x -o x$CONSOLECHARS != x'"$CONSOLECHARS"'; then
-     if test x$SETFONT != x -o x$SETFONT != x'"$SETFONT"'; then
+  if test x$CONSOLECHARS != x -o x$CONSOLECHARS != x'"$CONSOLECHARS"'; then
+       if test x$SETFONT != x -o x$SETFONT != x'"$SETFONT"'; then
 
-	dnl Now look for the console fonts directory
-	AC_CHECK_FILES([/usr/lib/kbd/consolefonts /usr/share/consolefonts])
+	  dnl Now look for the console fonts directory
+	  AC_CHECK_FILES([/usr/lib/kbd/consolefonts /usr/share/consolefonts])
 
-	if test "x$ac_cv_file__usr_lib_kbd_consolefonts" = "xno"; then
-	    if test "x$ac_cv_file__usr_share_consolefonts" = "xno"; then
-		AC_MSG_WARN([ 
+	  if test "x$ac_cv_file__usr_lib_kbd_consolefonts" = "xno"; then
+	      if test "x$ac_cv_file__usr_share_consolefonts" = "xno"; then
+		  AC_MSG_WARN([ 
 
 *** You do not appear to have a consolefonts directory in a standard location
 *** (/usr/lib/kbd or /usr/share), even though you appear to have the
@@ -97,17 +106,17 @@ if test x$CONSOLECHARS != x -o x$CONSOLECHARS != x'"$CONSOLECHARS"'; then
 *** matrix console font (and the -l command line switch) unless the font
 *** is located in your current directory when you run CMatrix.
 ])
-	    fi
-	fi
-     fi
-fi
+	      fi
+	  fi
+       fi
+  fi
 
-AC_PATH_PROG(MKFONTDIR, mkfontdir, "", $PATH:/usr/bin:/usr/bin/X11:/usr/local/bin/X11:/usr/X11R6/bin:/usr/local/bin:/sbin:/usr/sbin)
-AC_CHECK_FILES([/usr/lib/X11/fonts/misc /usr/X11R6/lib/X11/fonts/misc])
+  AC_PATH_PROG(MKFONTDIR, mkfontdir, "", $PATH:/usr/bin:/usr/bin/X11:/usr/local/bin/X11:/usr/X11R6/bin:/usr/local/bin:/sbin:/usr/sbin)
+  AC_CHECK_FILES([/usr/lib/X11/fonts/misc /usr/X11R6/lib/X11/fonts/misc])
 
-if test "x$ac_cv_file__usr_lib_X11_fonts_misc" = "xno"; then
-    if test "x$ac_cv_file__usr_X11R6_lib_X11_fonts_misc" = "xno"; then
-	AC_MSG_WARN([ 
+  if test "x$ac_cv_file__usr_lib_X11_fonts_misc" = "xno"; then
+      if test "x$ac_cv_file__usr_X11R6_lib_X11_fonts_misc" = "xno"; then
+	  AC_MSG_WARN([ 
 
 *** You do not appear to have an X window fonts directory in the standard
 *** locations (/usr/lib/X11/fonts/misc or /usr/X11R6/lib/X11/fonts/misc). The
@@ -115,14 +124,25 @@ if test "x$ac_cv_file__usr_lib_X11_fonts_misc" = "xno"; then
 *** be able to use the mtx fonts in your x terminals, and hence be unable
 *** to use the -x command line switch.  Sorry about that...
 ])
-	fi
-    fi
+	  fi
+      fi
+fi
 
 dnl Parse any configure options
 
 LIBS="$LIBS $CURSES_LIB"
 AC_ARG_ENABLE(debug, [  --enable-debug          Enable debugging (def disabled)],)
+AM_CONDITIONAL([MATRIX_FONTS], [test x$enable_fonts = xtrue])
 
 AC_SUBST(CURSES_LIB)
+
+AC_DEFINE(USE_TIOCSTI)
+
+AH_TEMPLATE([HAVE_USE_DEFAULT_COLORS], [Define this if your curses library has use_default_colors, for cool transparency =-)])
+AH_TEMPLATE([HAVE_CONSOLECHARS], [Define this if you have the linux consolechars program])
+AH_TEMPLATE([HAVE_SETFONT], [Define this if you have the linux setfont program])
+AH_TEMPLATE([HAVE_WRESIZE], [Define this if you have the wresize function in your ncurses-type library])
+AH_TEMPLATE([HAVE_RESIZETERM], [Define this if you have the resizeterm function in your ncurses-type library])
+AH_TEMPLATE([USE_TIOCSTI], [Define this if you want a character you pressed in the screensaver mode to retain in the terminal])
 
 AC_OUTPUT(Makefile cmatrix.spec)
