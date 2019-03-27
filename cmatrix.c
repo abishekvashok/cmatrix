@@ -437,18 +437,16 @@ if (console) {
     /* Set up values for random number generation */
     if(classic) {
         /* Japanese character unicode range [they are seen in the original cmatrix] */
-        randnum = 63;
         randmin = 12288;
         highnum = 12351;
     } else if (console || xwindow) {
-        randnum = 51;
         randmin = 166;
         highnum = 217;
     } else {
-        randnum = 93;
         randmin = 33;
         highnum = 123;
     }
+    randnum = highnum - randmin;
 
     var_init();
 
