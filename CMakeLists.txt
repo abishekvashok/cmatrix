@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(CMatrix LANGUAGES C)
-set(VERSION "1.2")
+set(VERSION "2.0")
 
 # These are relative to CMAKE_INSTALL_PREFIX
 # which by default is "/usr/local"
