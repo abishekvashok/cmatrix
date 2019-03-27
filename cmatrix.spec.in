@@ -1,6 +1,6 @@
 %define name    @PACKAGE@
 %define ver     @VERSION@
-%define rel     1
+%define rel     2
 
 Summary: CMatrix simulates the display from "The Matrix"
 Name: %{name}
