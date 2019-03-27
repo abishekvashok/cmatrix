@@ -299,14 +299,12 @@ int main(int argc, char *argv[]) {
             asynch = 1;
             break;
         case 'b':
-            if (bold != 2 && bold != -1) {
+            if (bold != 2) {
                 bold = 1;
             }
             break;
         case 'B':
-            if (bold != 0) {
-                bold = 2;
-            }
+            bold = 2;
             break;
         case 'C':
             if (!strcasecmp(optarg, "green")) {
