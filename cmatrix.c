@@ -60,6 +60,7 @@
 /* Matrix typedef */
 typedef struct cmatrix {
     int val;
+    bool is_head;
 } cmatrix;
 
 /* Global variables */
@@ -620,6 +621,7 @@ if (console) {
                         y = 0;
                         while (i <= LINES && (matrix[i][j].val != ' ' &&
                                matrix[i][j].val != -1)) {
+                            matrix[i][j].is_head = false;
                             i++;
                             y++;
                         }
@@ -630,7 +632,7 @@ if (console) {
                         }
 
                         matrix[i][j].val = (int) rand() % randnum + randmin;
-
+                        matrix[i][j].is_head = true;
 
                         /* If we're at the top of the collumn and it's reached its
                            full length (about to start moving down), we do this
@@ -657,7 +659,7 @@ if (console) {
             for (i = y; i <= z; i++) {
                 move(i - y, j);
 
-                if (matrix[i][j].val == 0) {
+                if (matrix[i][j].is_head && !rainbow) {
                     if (console || xwindow) {
                         attron(A_ALTCHARSET);
                     }
@@ -683,8 +685,7 @@ if (console) {
                         attroff(A_ALTCHARSET);
                     }
                 } else {
-
-                    if(rainbow){
+                    if(rainbow) {
                         int randomColor = rand() % 6;
 
                         switch(randomColor){
