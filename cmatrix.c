@@ -667,7 +667,7 @@ if (console) {
             for (i = y; i <= z; i++) {
                 move(i - y, j);
 
-                if (matrix[i][j].is_head && !rainbow) {
+                if (matrix[i][j].val == 0 || (matrix[i][j].is_head && !rainbow)) {
                     if (console || xwindow) {
                         attron(A_ALTCHARSET);
                     }
