@@ -12,7 +12,16 @@ set(X_FONTS_DIRS "lib/X11/fonts/misc" "X11R6/lib/X11/fonts/misc" "share/fonts/X1
 
 set(MKFONTDIR "/usr/bin/mkfontdir")
 
-add_definitions(-DEXCLUDE_CONFIG_H)
+message(STATUS "Looking for include file config.h")
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/config.h")
+    add_definitions(-DEXCLUDE_CONFIG_H)
+    message(STATUS "Looking for include file config.h - missing")
+else()
+    message(STATUS "Looking for include file config.h - found")
+endif()
+
+# configure_file(config.h.in config.h)
+
 add_definitions(-DVERSION="${VERSION}")
 add_definitions(-DUSE_TIOCSTI)
 
