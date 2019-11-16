@@ -127,7 +127,7 @@ void c_die(char *msg, ...) {
 }
 
 void usage(void) {
-    printf(" Usage: cmatrix -[abBcfhlsmVx] [-u delay] [-C color]\n");
+    printf(" Usage: cmatrix -[abBcfhlsmVxk] [-u delay] [-C color]\n");
     printf(" -a: Asynchronous scroll\n");
     printf(" -b: Bold characters on\n");
     printf(" -B: All bold characters (overrides -b)\n");
@@ -145,6 +145,7 @@ void usage(void) {
     printf(" -C [color]: Use this color for matrix (default green)\n");
     printf(" -r: rainbow mode\n");
     printf(" -m: lambda mode\n");
+    printf(" -k: Characters change while scorlling. (Only works without any other opts.)\n");
 }
 
 void version(void) {
@@ -287,13 +288,14 @@ int main(int argc, char *argv[]) {
     int randmin = 0;
     int pause = 0;
     int classic = 0;
+    int changes = 0;
 
     srand((unsigned) time(NULL));
     setlocale(LC_ALL, "");
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVu:C:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -369,6 +371,9 @@ int main(int argc, char *argv[]) {
         case 'm':
              lambda = 1;
              break;
+        case 'k':
+            changes = 1;
+            break;
         }
     }
 
@@ -630,6 +635,11 @@ if (console) {
                         while (i <= LINES && (matrix[i][j].val != ' ' &&
                                matrix[i][j].val != -1)) {
                             matrix[i][j].is_head = false;
+                            if(changes) {
+                                int dice = rand() % 8;
+                                if(dice == 0)
+                                    matrix[i][j].val = (int) rand() % randnum + randmin;
+                            }
                             i++;
                             y++;
                         }
