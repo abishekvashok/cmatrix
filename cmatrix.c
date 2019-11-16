@@ -145,7 +145,7 @@ void usage(void) {
     printf(" -C [color]: Use this color for matrix (default green)\n");
     printf(" -r: rainbow mode\n");
     printf(" -m: lambda mode\n");
-    printf(" -k: Characters change while scorlling. (Only works without any other opts.)\n");
+    printf(" -k: Characters change while scorlling. (Works without -o opt.)\n");
 }
 
 void version(void) {
