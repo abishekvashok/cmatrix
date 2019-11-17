@@ -636,8 +636,7 @@ if (console) {
                                matrix[i][j].val != -1)) {
                             matrix[i][j].is_head = false;
                             if(changes) {
-                                int dice = rand() % 8;
-                                if(dice == 0)
+                                if(rand() % 8 == 0)
                                     matrix[i][j].val = (int) rand() % randnum + randmin;
                             }
                             i++;
