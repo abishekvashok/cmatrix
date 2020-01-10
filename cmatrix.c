@@ -605,7 +605,6 @@ if (console) {
                 } else { /* New style scrolling (default) */
                     if (matrix[0][j].val == -1 && matrix[1][j].val == ' '
                         && spaces[j] > 0) {
-                        matrix[0][j].val = -1;
                         spaces[j]--;
                     } else if (matrix[0][j].val == -1
                         && matrix[1][j].val == ' ') {
