@@ -141,6 +141,7 @@ void usage(void) {
     printf(" -s: \"Screensaver\" mode, exits on first keystroke\n");
     printf(" -x: X window mode, use if your xterm is using mtx.pcf\n");
     printf(" -V: Print version information and exit\n");
+    printf(" -M: Prints your message in the center of the screen. Overrides -L's default message.");
     printf(" -u delay (0 - 10, default 4): Screen update delay\n");
     printf(" -C [color]: Use this color for matrix (default green)\n");
     printf(" -r: rainbow mode\n");
@@ -289,13 +290,14 @@ int main(int argc, char *argv[]) {
     int pause = 0;
     int classic = 0;
     int changes = 0;
+    char *msg = "";
 
     srand((unsigned) time(NULL));
     setlocale(LC_ALL, "");
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVM:u:C:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -345,6 +347,13 @@ int main(int argc, char *argv[]) {
             break;
         case 'L':
             lock = 1;
+            //if -M was used earlier, don't override it
+            if(msg == ""){
+                msg = "Computer locked.";
+            }
+            break;
+        case 'M':
+            msg = strdup(optarg);
             break;
         case 'n':
             bold = -1;
@@ -366,11 +375,11 @@ int main(int argc, char *argv[]) {
             version();
             exit(0);
         case 'r':
-             rainbow = 1;
-             break;
+            rainbow = 1;
+            break;
         case 'm':
-             lambda = 1;
-             break;
+            lambda = 1;
+            break;
         case 'k':
             changes = 1;
             break;
@@ -762,11 +771,9 @@ if (console) {
             }
         }
 
-        //Check if computer is locked
-        if(lock == 1){
-
+        //check if -m and/or -L was used
+        if (msg[0] != '\0'){
             //Add our message to the screen
-            char *msg = "Computer locked.";
             int msg_x = LINES/2;
             int msg_y = COLS/2 - strlen(msg)/2;
             int i = 0;
