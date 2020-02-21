@@ -17,7 +17,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+    along with cmatrix. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
@@ -29,12 +29,19 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <termios.h>
 #include <signal.h>
 #include <locale.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 #ifndef EXCLUDE_CONFIG_H
 #include "config.h"
+#endif
+
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
 #endif
 
 #ifdef HAVE_NCURSES_H
@@ -71,7 +78,9 @@ cmatrix **matrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
 int *updates = NULL; /* What does this do again? */
+#ifndef _WIN32
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
+#endif
 
 int va_system(char *str, ...) {
 
@@ -220,11 +229,22 @@ void var_init() {
 
 }
 
+#ifndef _WIN32
 void sighandler(int s) {
     signal_status = s;
 }
+#endif
 
 void resize_screen(void) {
+#ifdef _WIN32
+    BOOL result;
+    HANDLE hStdHandle;
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+
+    hStdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if(hStdHandle == INVALID_HANDLE_VALUE)
+        return;
+#else
     char *tty;
     int fd = 0;
     int result = 0;
@@ -233,6 +253,14 @@ void resize_screen(void) {
     tty = ttyname(0);
     if (!tty) {
         return;
+#endif
+#ifdef _WIN32
+    result = GetConsoleScreenBufferInfo(hStdHandle, &csbiInfo);
+    if(!result)
+        return;
+    LINES = csbiInfo.dwSize.Y;
+    COLS = csbiInfo.dwSize.X;
+#else
     }
     fd = open(tty, O_RDWR);
     if (fd == -1) {
@@ -245,6 +273,7 @@ void resize_screen(void) {
 
     COLS = win.ws_col;
     LINES = win.ws_row;
+#endif
 
     if(LINES <10){
         LINES = 10;
@@ -378,21 +407,31 @@ int main(int argc, char *argv[]) {
     }
 
     if (force && strcmp("linux", getenv("TERM"))) {
+#ifdef _WIN32
+        SetEnvironmentVariableW(L"TERM", L"linux");
+#else
         /* setenv is much more safe to use than putenv */
         setenv("TERM", "linux", 1);
+#endif
     }
     initscr();
     savetty();
     nonl();
+#ifdef _WIN32
+    raw();
+#else
     cbreak();
+#endif
     noecho();
     timeout(0);
     leaveok(stdscr, TRUE);
     curs_set(0);
+#ifndef _WIN32
     signal(SIGINT, sighandler);
     signal(SIGQUIT, sighandler);
     signal(SIGWINCH, sighandler);
     signal(SIGTSTP, sighandler);
+#endif
 
 if (console) {
 #ifdef HAVE_CONSOLECHARS
@@ -456,6 +495,7 @@ if (console) {
     var_init();
 
     while (1) {
+#ifndef _WIN32
         /* Check for signals */
         if (signal_status == SIGINT || signal_status == SIGQUIT) {
             if(lock != 1)
@@ -471,6 +511,7 @@ if (console) {
             if(lock != 1)
                     finish();
         }
+#endif
 
         count++;
         if (count > 4) {
@@ -494,6 +535,9 @@ if (console) {
                 finish();
             } else {
                 switch (keypress) {
+#ifdef _WIN32
+                case 3: /* Ctrl-C. Fall through */
+#endif
                 case 'q':
                     if(lock != 1)
                         finish();

@@ -5,6 +5,15 @@ AC_CONFIG_SRCDIR([cmatrix.c])
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE
 
+AC_CANONICAL_HOST
+case $host in
+  *mingw*)
+    ;;
+  *)
+    native_windows=no
+    ;;
+esac
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -16,7 +25,7 @@ AC_CHECK_LIB(ncurses, main)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h sys/ioctl.h unistd.h termios.h termio.h)
+AC_CHECK_HEADERS(fcntl.h sys/ioctl.h unistd.h termios.h termio.h getopt.h)
 
 dnl Checks for library functions.
 AC_TYPE_SIGNAL
@@ -35,6 +44,11 @@ fi
 
 if eval "test x$CURSES_LIB_NAME = x"
 then
+    AC_CHECK_LIB(pdcurses, initscr, CURSES_LIB="-lpdcurses" CURSES_LIB_NAME=pdcurses)
+fi
+
+if eval "test x$CURSES_LIB_NAME = x"
+then
     AC_CHECK_LIB(termcap, tgetent, CURSES_LIB="-ltermcap" CURSES_LIB_NAME=termcap)
 fi
 
@@ -48,7 +62,7 @@ then
     AC_MSG_WARN([
 *** No termcap lib available, consider getting the official ncurses
 *** distribution from ftp://ftp.gnu.org/pub/gnu/ncurses if you get
-*** errors compiling nano.])
+*** errors compiling cmatrix.])
 else
     AC_MSG_RESULT("Using $CURSES_LIB_NAME as the termcap library")
 fi
@@ -136,7 +150,9 @@ AM_CONDITIONAL([MATRIX_FONTS], [test x$enable_fonts = xtrue])
 
 AC_SUBST(CURSES_LIB)
 
-AC_DEFINE(USE_TIOCSTI)
+if test x$native_windows = xno; then
+  AC_DEFINE(USE_TIOCSTI)
+fi
 
 AH_TEMPLATE([HAVE_USE_DEFAULT_COLORS], [Define this if your curses library has use_default_colors, for cool transparency =-)])
 AH_TEMPLATE([HAVE_CONSOLECHARS], [Define this if you have the linux consolechars program])
