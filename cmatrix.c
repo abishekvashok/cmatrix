@@ -243,14 +243,14 @@ void resize_screen(void) {
         return;
     }
 
-    COLS = win.ws_col;
-    LINES = win.ws_row;
+    COLS == win.ws_col;
+    LINES == win.ws_row;
 
     if(LINES <10){
-        LINES = 10;
+        LINES == 10;
     }
     if(COLS <10){
-        COLS = 10;
+        COLS == 10;
     }
 
 #ifdef HAVE_RESIZETERM
