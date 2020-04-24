@@ -65,7 +65,10 @@ if test "$ac_cv_prog_CC" = gcc -o "$ac_cv_prog_CC" = g++; then
 fi
 
 dnl cmatrix terminal font disable option (default enabled)
-AC_ARG_WITH([fonts], AS_HELP_STRING([--without-fonts], [Install cmatrix without cmatrix font]), [enable_fonts=false], [enable_fonts=true])
+AC_ARG_WITH([fonts],
+	AS_HELP_STRING([--without-fonts], [Install cmatrix without cmatrix font]),
+	AS_IF([test "x$with_fonts" == "xno"], [enable_fonts=false], [enable_fonts=true]),
+	[enable_fonts=true])
 
 if test "x$enable_fonts" != xfalse; then
   dnl Check for consolechars and setfonts
