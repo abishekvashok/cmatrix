@@ -112,14 +112,14 @@ if test "x$enable_fonts" != xfalse; then
   fi
 
   AC_PATH_PROG(MKFONTDIR, mkfontdir, "", $PATH:/usr/bin:/usr/bin/X11:/usr/local/bin/X11:/usr/X11R6/bin:/usr/local/bin:/sbin:/usr/sbin)
-  AC_CHECK_FILES([/usr/lib/X11/fonts/misc /usr/X11R6/lib/X11/fonts/misc])
+  AC_CHECK_FILES([/usr/share/fonts/misc /usr/X11R6/lib/X11/fonts/misc])
 
   if test "x$ac_cv_file__usr_lib_X11_fonts_misc" = "xno"; then
       if test "x$ac_cv_file__usr_X11R6_lib_X11_fonts_misc" = "xno"; then
 	  AC_MSG_WARN([ 
 
 *** You do not appear to have an X window fonts directory in the standard
-*** locations (/usr/lib/X11/fonts/misc or /usr/X11R6/lib/X11/fonts/misc). The
+*** locations (/usr/share/fonts/misc or /usr/X11R6/lib/X11/fonts/misc). The
 *** mtx.pcf font will not be installed.  This means you will probably not
 *** be able to use the mtx fonts in your x terminals, and hence be unable
 *** to use the -x command line switch.  Sorry about that...

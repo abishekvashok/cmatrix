@@ -25,12 +25,12 @@ install-data-local:
 	    		$(INSTALL_DATA) $(srcdir)/matrix.fnt /usr/lib/kbd/consolefonts; \
 	    		$(INSTALL_DATA) $(srcdir)/matrix.psf.gz /usr/lib/kbd/consolefonts; \
 		fi; \
-		if test -d /usr/lib/X11/fonts/misc; then \
-	    		echo " Installing X window matrix fonts in /usr/lib/X11/fonts/misc..."; \
-	    		$(INSTALL_DATA) $(srcdir)/mtx.pcf /usr/lib/X11/fonts/misc; \
-	    		$(INSTALL_DATA) $(srcdir)/mtx.pcf /usr/lib/X11/fonts/misc; \
-	    		echo " Running mkfontdir /usr/lib/X11/fonts/misc..."; \
-	    		$(MKFONTDIR) /usr/lib/X11/fonts/misc; \
+		if test -d /usr/share/fonts/misc; then \
+	    		echo " Installing X window matrix fonts in /usr/share/fonts/misc..."; \
+	    		$(INSTALL_DATA) $(srcdir)/mtx.pcf /usr/share/fonts/misc; \
+	    		$(INSTALL_DATA) $(srcdir)/mtx.pcf /usr/share/fonts/misc; \
+	    		echo " Running mkfontdir /usr/share/fonts/misc..."; \
+	    		$(MKFONTDIR) /usr/share/fonts/misc; \
 	    		echo " Done.  If this is the first time you have installed CMatrix you will"; \
 	    		echo " probably have to restart X window in order to use the mtx.pcf font."; \
 		else \
