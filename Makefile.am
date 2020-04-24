@@ -17,6 +17,7 @@ install-data-local:
 	@if test $(BUILD_FONTS) = 1; then \
 		if test -d /usr/share/consolefonts; then \
 	    		echo " Installing matrix fonts in /usr/share/consolefonts..."; \
+	    		mkdir -p $(DESTDIR)/usr/share/consolefonts; \
 	    		$(INSTALL_DATA) $(srcdir)/matrix.fnt $(DESTDIR)/usr/share/consolefonts; \
 	    		$(INSTALL_DATA) $(srcdir)/matrix.psf.gz  $(DESTDIR)/usr/share/consolefonts; \
 		fi; \
