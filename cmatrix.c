@@ -21,6 +21,7 @@
 
 */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -146,6 +147,7 @@ void usage(void) {
     printf(" -r: rainbow mode\n");
     printf(" -m: lambda mode\n");
     printf(" -k: Characters change while scorlling. (Works without -o opt.)\n");
+    printf(" -t [tty]: Set tty to use\n");
 }
 
 void version(void) {
@@ -289,13 +291,14 @@ int main(int argc, char *argv[]) {
     int pause = 0;
     int classic = 0;
     int changes = 0;
+    char *tty = NULL;
 
     srand((unsigned) time(NULL));
     setlocale(LC_ALL, "");
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVu:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVu:C:t:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -374,6 +377,9 @@ int main(int argc, char *argv[]) {
         case 'k':
             changes = 1;
             break;
+        case 't':
+            tty = optarg;
+            break;
         }
     }
 
@@ -381,7 +387,20 @@ int main(int argc, char *argv[]) {
         /* setenv is much more safe to use than putenv */
         setenv("TERM", "linux", 1);
     }
-    initscr();
+    if (tty) {
+        FILE *ftty = fopen(tty, "r+");
+        if (!ftty) {
+            fprintf(stderr, "cmatrix: error: '%s' couldn't be opened: %s.\n",
+                    tty, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        SCREEN *ttyscr;
+        ttyscr = newterm(NULL, ftty, ftty);
+        if (ttyscr == NULL)
+            exit(EXIT_FAILURE);
+        set_term(ttyscr);
+    } else
+        initscr();
     savetty();
     nonl();
     cbreak();
