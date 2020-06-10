@@ -155,7 +155,7 @@ void usage(void) {
     printf(" -C [color]: Use this color for matrix (default green)\n");
     printf(" -r: rainbow mode\n");
     printf(" -m: lambda mode\n");
-    printf(" -k: Characters change while scorlling. (Works without -o opt.)\n");
+    printf(" -k: Characters change while scrolling. (Works without -o opt.)\n");
     printf(" -t [tty]: Set tty to use\n");
 }
 
