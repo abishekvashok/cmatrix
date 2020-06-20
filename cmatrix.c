@@ -141,7 +141,7 @@ void usage(void) {
     printf(" -s: \"Screensaver\" mode, exits on first keystroke\n");
     printf(" -x: X window mode, use if your xterm is using mtx.pcf\n");
     printf(" -V: Print version information and exit\n");
-    printf(" -M: Prints your message in the center of the screen. Overrides -L's default message.");
+    printf(" -M: Prints your message in the center of the screen. Overrides -L's default message.\n");
     printf(" -u delay (0 - 10, default 4): Screen update delay\n");
     printf(" -C [color]: Use this color for matrix (default green)\n");
     printf(" -r: rainbow mode\n");
