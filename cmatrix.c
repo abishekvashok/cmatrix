@@ -17,10 +17,11 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+    along with cmatrix. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -29,12 +30,19 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <termios.h>
 #include <signal.h>
 #include <locale.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 #ifndef EXCLUDE_CONFIG_H
 #include "config.h"
+#endif
+
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
 #endif
 
 #ifdef HAVE_NCURSES_H
@@ -71,7 +79,9 @@ cmatrix **matrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
 int *updates = NULL; /* What does this do again? */
+#ifndef _WIN32
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
+#endif
 
 int va_system(char *str, ...) {
 
@@ -127,7 +137,7 @@ void c_die(char *msg, ...) {
 }
 
 void usage(void) {
-    printf(" Usage: cmatrix -[abBcfhlsmVxk] [-u delay] [-C color]\n");
+    printf(" Usage: cmatrix -[abBcfhlsmVxk] [-u delay] [-C color] [-t tty] [-M message]\n");
     printf(" -a: Asynchronous scroll\n");
     printf(" -b: Bold characters on\n");
     printf(" -B: All bold characters (overrides -b)\n");
@@ -141,12 +151,13 @@ void usage(void) {
     printf(" -s: \"Screensaver\" mode, exits on first keystroke\n");
     printf(" -x: X window mode, use if your xterm is using mtx.pcf\n");
     printf(" -V: Print version information and exit\n");
-    printf(" -M: Prints your message in the center of the screen. Overrides -L's default message.\n");
+    printf(" -M [message]: Prints your message in the center of the screen. Overrides -L's default message.\n");
     printf(" -u delay (0 - 10, default 4): Screen update delay\n");
     printf(" -C [color]: Use this color for matrix (default green)\n");
     printf(" -r: rainbow mode\n");
     printf(" -m: lambda mode\n");
-    printf(" -k: Characters change while scorlling. (Works without -o opt.)\n");
+    printf(" -k: Characters change while scrolling. (Works without -o opt.)\n");
+    printf(" -t [tty]: Set tty to use\n");
 }
 
 void version(void) {
@@ -221,11 +232,22 @@ void var_init() {
 
 }
 
+#ifndef _WIN32
 void sighandler(int s) {
     signal_status = s;
 }
+#endif
 
 void resize_screen(void) {
+#ifdef _WIN32
+    BOOL result;
+    HANDLE hStdHandle;
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+
+    hStdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if(hStdHandle == INVALID_HANDLE_VALUE)
+        return;
+#else
     char *tty;
     int fd = 0;
     int result = 0;
@@ -234,6 +256,14 @@ void resize_screen(void) {
     tty = ttyname(0);
     if (!tty) {
         return;
+#endif
+#ifdef _WIN32
+    result = GetConsoleScreenBufferInfo(hStdHandle, &csbiInfo);
+    if(!result)
+        return;
+    LINES = csbiInfo.dwSize.Y;
+    COLS = csbiInfo.dwSize.X;
+#else
     }
     fd = open(tty, O_RDWR);
     if (fd == -1) {
@@ -246,6 +276,7 @@ void resize_screen(void) {
 
     COLS = win.ws_col;
     LINES = win.ws_row;
+#endif
 
     if(LINES <10){
         LINES = 10;
@@ -291,13 +322,14 @@ int main(int argc, char *argv[]) {
     int classic = 0;
     int changes = 0;
     char *msg = "";
+    char *tty = NULL;
 
     srand((unsigned) time(NULL));
     setlocale(LC_ALL, "");
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVM:u:C:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVM:u:C:t:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -383,25 +415,51 @@ int main(int argc, char *argv[]) {
         case 'k':
             changes = 1;
             break;
+        case 't':
+            tty = optarg;
+            break;
         }
     }
 
     if (force && strcmp("linux", getenv("TERM"))) {
+#ifdef _WIN32
+        SetEnvironmentVariableW(L"TERM", L"linux");
+#else
         /* setenv is much more safe to use than putenv */
         setenv("TERM", "linux", 1);
+#endif
     }
-    initscr();
+    if (tty) {
+        FILE *ftty = fopen(tty, "r+");
+        if (!ftty) {
+            fprintf(stderr, "cmatrix: error: '%s' couldn't be opened: %s.\n",
+                    tty, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        SCREEN *ttyscr;
+        ttyscr = newterm(NULL, ftty, ftty);
+        if (ttyscr == NULL)
+            exit(EXIT_FAILURE);
+        set_term(ttyscr);
+    } else
+        initscr();
     savetty();
     nonl();
+#ifdef _WIN32
+    raw();
+#else
     cbreak();
+#endif
     noecho();
     timeout(0);
     leaveok(stdscr, TRUE);
     curs_set(0);
+#ifndef _WIN32
     signal(SIGINT, sighandler);
     signal(SIGQUIT, sighandler);
     signal(SIGWINCH, sighandler);
     signal(SIGTSTP, sighandler);
+#endif
 
 if (console) {
 #ifdef HAVE_CONSOLECHARS
@@ -465,6 +523,7 @@ if (console) {
     var_init();
 
     while (1) {
+#ifndef _WIN32
         /* Check for signals */
         if (signal_status == SIGINT || signal_status == SIGQUIT) {
             if(lock != 1)
@@ -480,6 +539,7 @@ if (console) {
             if(lock != 1)
                     finish();
         }
+#endif
 
         count++;
         if (count > 4) {
@@ -503,6 +563,9 @@ if (console) {
                 finish();
             } else {
                 switch (keypress) {
+#ifdef _WIN32
+                case 3: /* Ctrl-C. Fall through */
+#endif
                 case 'q':
                     if(lock != 1)
                         finish();
@@ -771,7 +834,7 @@ if (console) {
             }
         }
 
-        //check if -m and/or -L was used
+        //check if -M and/or -L was used
         if (msg[0] != '\0'){
             //Add our message to the screen
             int msg_x = LINES/2;

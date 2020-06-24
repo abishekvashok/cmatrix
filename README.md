@@ -12,7 +12,7 @@ effect, you must specify `-s` on the command line. For usage info, use `cmatrix 
 [![Build Status](https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master)](https://travis-ci.org/abishekvashok/cmatrix)
 
 ### Dependencies
-You'll probably need a decent ncurses library to get this to work.
+You'll probably need a decent ncurses library (or PDCurses on native Windows) to get this to work.
 
 ### Building and installing cmatrix
 To install cmatrix, use either of the following methods from within the cmatrix directory.
@@ -27,6 +27,7 @@ make install
 
 #### Using CMake
 Here we also show an out-of-source build in the sub directory "build".
+Don't use CMake if you want to use PDCurses, it won't work (for now).
 ```
 mkdir -p build
 cd build
