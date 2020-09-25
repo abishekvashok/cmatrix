@@ -380,7 +380,7 @@ int main(int argc, char *argv[]) {
         case 'L':
             lock = 1;
             //if -M was used earlier, don't override it
-            if(msg == ""){
+            if (0 == strncmp(msg, "", 1)) {
                 msg = "Computer locked.";
             }
             break;
