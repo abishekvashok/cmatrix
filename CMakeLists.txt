@@ -50,6 +50,7 @@ if	(HAVE_GETOPT_H)
 endif	()
 
 Set(CURSES_NEED_NCURSES TRUE)
+Set(CURSES_NEED_WIDE TRUE)
 find_package(Curses)
 include_directories(${CURSES_INCLUDE_DIR})
 add_definitions(-DHAVE_NCURSES_H)
