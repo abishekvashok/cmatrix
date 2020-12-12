@@ -194,6 +194,14 @@ void var_init() {
         matrix[i] = matrix[i - 1] + COLS;
     }
 
+    for (i = 0; i < LINES; ++i)
+    {
+        for (j = 0; j < COLS; ++j)
+        {
+            matrix[i][j].is_head = false;
+        }
+    }
+
     if (length != NULL) {
         free(length);
     }
