@@ -79,10 +79,6 @@ cmatrix **matrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
 int *updates = NULL; /* What does this do again? */
-
-int cmatrix_lines;  /* The number of terminal lines */
-int cmatrix_cols;   /* The number of terminal columns */
-
 #ifndef _WIN32
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
 #endif
@@ -281,13 +277,6 @@ void resize_screen(void) {
     cmatrix_cols = win.ws_col;
     cmatrix_lines = win.ws_row;
 #endif
-
-    if(LINES <10){
-        cmatrix_lines = 10;
-    }
-    if(COLS <10){
-        cmatrix_cols = 10;
-    }
 
 #ifdef HAVE_RESIZETERM
     resizeterm(LINES, COLS);
