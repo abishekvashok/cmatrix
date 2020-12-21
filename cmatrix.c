@@ -761,6 +761,8 @@ if (console) {
                         } else {
                             addch('&');
                         }
+                    } else if (matrix[i][j].val == -1) {
+                        addch(' ');
                     } else {
                         addch(matrix[i][j].val);
                     }
