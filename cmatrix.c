@@ -79,6 +79,7 @@ cmatrix **matrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
 int *updates = NULL; /* What does this do again? */
+int lines, cols;
 #ifndef _WIN32
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
 #endif
@@ -181,6 +182,8 @@ void *nmalloc(size_t howmuch) {
 
 /* Initialize the global variables */
 void var_init() {
+    lines = LINES;
+    cols = COLS;
     int i, j;
 
     if (matrix != NULL) {
@@ -188,40 +191,40 @@ void var_init() {
         free(matrix);
     }
 
-    matrix = nmalloc(sizeof(cmatrix *) * (LINES + 1));
-    matrix[0] = nmalloc(sizeof(cmatrix) * (LINES + 1) * COLS);
-    for (i = 1; i <= LINES; i++) {
-        matrix[i] = matrix[i - 1] + COLS;
+    matrix = nmalloc(sizeof(cmatrix *) * (lines + 1));
+    matrix[0] = nmalloc(sizeof(cmatrix) * (lines + 1) * cols);
+    for (i = 1; i <= lines; i++) {
+        matrix[i] = matrix[i - 1] + cols;
     }
 
     if (length != NULL) {
         free(length);
     }
-    length = nmalloc(COLS * sizeof(int));
+    length = nmalloc(cols * sizeof(int));
 
     if (spaces != NULL) {
         free(spaces);
     }
-    spaces = nmalloc(COLS* sizeof(int));
+    spaces = nmalloc(cols* sizeof(int));
 
     if (updates != NULL) {
         free(updates);
     }
-    updates = nmalloc(COLS * sizeof(int));
+    updates = nmalloc(cols * sizeof(int));
 
     /* Make the matrix */
-    for (i = 0; i <= LINES; i++) {
-        for (j = 0; j <= COLS - 1; j += 2) {
+    for (i = 0; i <= lines; i++) {
+        for (j = 0; j <= cols - 1; j += 2) {
             matrix[i][j].val = -1;
         }
     }
 
-    for (j = 0; j <= COLS - 1; j += 2) {
+    for (j = 0; j <= cols - 1; j += 2) {
         /* Set up spaces[] array of how many spaces to skip */
-        spaces[j] = (int) rand() % LINES + 1;
+        spaces[j] = (int) rand() % lines + 1;
 
         /* And length of the stream */
-        length[j] = (int) rand() % (LINES - 3) + 3;
+        length[j] = (int) rand() % (lines - 3) + 3;
 
         /* Sentinel value for creation of new objects */
         matrix[1][j].val = ' ';
@@ -261,8 +264,8 @@ void resize_screen(void) {
     result = GetConsoleScreenBufferInfo(hStdHandle, &csbiInfo);
     if(!result)
         return;
-    LINES = csbiInfo.dwSize.Y;
-    COLS = csbiInfo.dwSize.X;
+    lines = csbiInfo.dwSize.Y;
+    cols = csbiInfo.dwSize.X;
 #else
     }
     fd = open(tty, O_RDWR);
@@ -274,21 +277,21 @@ void resize_screen(void) {
         return;
     }
 
-    COLS = win.ws_col;
-    LINES = win.ws_row;
+    cols = win.ws_col;
+    lines = win.ws_row;
 #endif
 
-    if(LINES <10){
-        LINES = 10;
+    if(lines <10){
+        lines = 10;
     }
-    if(COLS <10){
-        COLS = 10;
+    if(cols <10){
+        cols = 10;
     }
 
 #ifdef HAVE_RESIZETERM
-    resizeterm(LINES, COLS);
+    resizeterm(lines, cols);
 #ifdef HAVE_WRESIZE
-    if (wresize(stdscr, LINES, COLS) == ERR) {
+    if (wresize(stdscr, lines, cols) == ERR) {
         c_die("Cannot resize window!");
     }
 #endif /* HAVE_WRESIZE */
@@ -639,12 +642,12 @@ if (console) {
                 }
             }
         }
-        for (j = 0; j <= COLS - 1; j += 2) {
+        for (j = 0; j <= cols - 1; j += 2) {
             if ((count > updates[j] || asynch == 0) && pause == 0) {
 
                 /* I dont like old-style scrolling, yuck */
                 if (oldstyle) {
-                    for (i = LINES - 1; i >= 1; i--) {
+                    for (i = lines - 1; i >= 1; i--) {
                         matrix[i][j].val = matrix[i - 1][j].val;
                     }
                     random = (int) rand() % (randnum + 8) + randmin;
@@ -666,7 +669,7 @@ if (console) {
                             } else {
                                 matrix[0][j].val = (int) rand() % randnum + randmin;
                             }
-                            spaces[j] = (int) rand() % LINES + 1;
+                            spaces[j] = (int) rand() % lines + 1;
                         }
                     } else if (random > highnum && matrix[1][j].val != 1) {
                         matrix[0][j].val = ' ';
@@ -680,30 +683,30 @@ if (console) {
                         spaces[j]--;
                     } else if (matrix[0][j].val == -1
                         && matrix[1][j].val == ' ') {
-                        length[j] = (int) rand() % (LINES - 3) + 3;
+                        length[j] = (int) rand() % (lines - 3) + 3;
                         matrix[0][j].val = (int) rand() % randnum + randmin;
 
-                        spaces[j] = (int) rand() % LINES + 1;
+                        spaces[j] = (int) rand() % lines + 1;
                     }
                     i = 0;
                     y = 0;
                     firstcoldone = 0;
-                    while (i <= LINES) {
+                    while (i <= lines) {
 
                         /* Skip over spaces */
-                        while (i <= LINES && (matrix[i][j].val == ' ' ||
+                        while (i <= lines && (matrix[i][j].val == ' ' ||
                                matrix[i][j].val == -1)) {
                             i++;
                         }
 
-                        if (i > LINES) {
+                        if (i > lines) {
                             break;
                         }
 
                         /* Go to the head of this column */
                         z = i;
                         y = 0;
-                        while (i <= LINES && (matrix[i][j].val != ' ' &&
+                        while (i <= lines && (matrix[i][j].val != ' ' &&
                                matrix[i][j].val != -1)) {
                             matrix[i][j].is_head = false;
                             if(changes) {
@@ -714,7 +717,7 @@ if (console) {
                             y++;
                         }
 
-                        if (i > LINES) {
+                        if (i > lines) {
                             matrix[z][j].val = ' ';
                             continue;
                         }
@@ -739,10 +742,10 @@ if (console) {
             /* A simple hack */
             if (!oldstyle) {
                 y = 1;
-                z = LINES;
+                z = lines;
             } else {
                 y = 0;
-                z = LINES - 1;
+                z = lines - 1;
             }
             for (i = y; i <= z; i++) {
                 move(i - y, j);
@@ -839,8 +842,8 @@ if (console) {
         //check if -M and/or -L was used
         if (msg[0] != '\0'){
             //Add our message to the screen
-            int msg_x = LINES/2;
-            int msg_y = COLS/2 - strlen(msg)/2;
+            int msg_x = lines/2;
+            int msg_y = cols/2 - strlen(msg)/2;
             int i = 0;
 
             //Add space before message
