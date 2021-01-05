@@ -382,7 +382,7 @@ int main(int argc, char *argv[]) {
         case 'L':
             lock = 1;
             //if -M was used earlier, don't override it
-            if(msg == ""){
+            if (0 == strncmp(msg, "", 1)) {
                 msg = "Computer locked.";
             }
             break;
@@ -663,7 +663,7 @@ if (console) {
                             spaces[j]--;
                         } else {
 
-                            /* Random number to determine whether head of next collumn
+                            /* Random number to determine whether head of next column
                                of chars has a white 'head' on it. */
 
                             if (((int) rand() % 3) == 1) {
@@ -705,7 +705,7 @@ if (console) {
                             break;
                         }
 
-                        /* Go to the head of this collumn */
+                        /* Go to the head of this column */
                         z = i;
                         y = 0;
                         while (i <= LINES && (matrix[i][j].val != ' ' &&
@@ -727,7 +727,7 @@ if (console) {
                         matrix[i][j].val = (int) rand() % randnum + randmin;
                         matrix[i][j].is_head = true;
 
-                        /* If we're at the top of the collumn and it's reached its
+                        /* If we're at the top of the column and it's reached its
                            full length (about to start moving down), we do this
                            to get it moving.  This is also how we keep segments not
                            already growing from growing accidentally =>
@@ -766,6 +766,8 @@ if (console) {
                         } else {
                             addch('&');
                         }
+                    } else if (matrix[i][j].val == -1) {
+                        addch(' ');
                     } else {
                         addch(matrix[i][j].val);
                     }
