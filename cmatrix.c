@@ -514,8 +514,8 @@ if (console) {
          * they appear alongside latin characters and numerals, but this is the
          * closest we can do with a standard unicode set and a single number
          * range */
-        randmin = 0xff61;
-        highnum = 0xff9e;
+        randmin = 0xff66;
+        highnum = 0xff9d;
     } else if (console || xwindow) {
         randmin = 166;
         highnum = 217;
