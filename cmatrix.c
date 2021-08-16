@@ -586,7 +586,7 @@ if (console) {
                 case 'r':
                      rainbow = 1;
                      break;
-                case 'm':
+                case 'M':
                      lambda = !lambda;
                      break;
                 case '^':
