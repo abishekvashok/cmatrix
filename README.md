@@ -66,7 +66,7 @@ _Note: cmatrix is probably not particularly portable or efficient, but it wont h
 - Abishek V Ashok (@abishekvashok) <abishekvashok@gmail.com> [Core]
 
 ### Thanks to:
-- Chris Allegretta <chrisa@asty.org> for writing cmatrix up in a fornight and giving us
+- Chris Allegretta <chrisa@asty.org> for writing cmatrix up in a fortnight and giving us
   the responsibility to further improve it.
 - Krisjon Hanson and Bjoern Ganslandt for helping with bold support and 
   Bjoern again for the cursor removal code, helping with the `-u` and `-l`

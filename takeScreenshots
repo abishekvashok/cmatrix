@@ -11,7 +11,7 @@ TERM_EMULATOR_BASE="rxvt +sb"
 CAPTURES_DIR="data/img"
 
 # Function to take a single cmatrix screenshot (takes about 3.5s to execute)
-# or optionally, a screncast of choosable length.
+# or optionally, a screencast of choosable length.
 captureCMatrix() {
 	CAPTURE_FILE="$1"
 	CMATRIX_OPTIONS="$2"
