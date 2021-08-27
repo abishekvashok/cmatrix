@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Produces a bunch of `cmatrix` screenshots and screencasts.
 # This script requires X and the following:
 #apt-get install rxvt byzanz
