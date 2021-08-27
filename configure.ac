@@ -73,7 +73,7 @@ AC_CHECK_LIB($CURSES_LIB_NAME, resizeterm, [AC_DEFINE(HAVE_RESIZETERM)])
 AC_CHECK_LIB([$CURSES_LIB_NAME], wresize, [AC_DEFINE(HAVE_WRESIZE)])
 
 
-dnl Only change gcc options if we are using gcc.  
+dnl Only change gcc options if we are using gcc.
 if test "$ac_cv_prog_CC" = gcc -o "$ac_cv_prog_CC" = g++; then
   CFLAGS="$CFLAGS -Wall -Wno-comment"
 fi
@@ -98,7 +98,7 @@ if test "x$enable_fonts" != xfalse; then
 *** console without this program (it may still work in xterms). If you are
 *** using Linux, the package containing this program is usually called
 *** kbd, kbd-utils, or console-utils
-])	
+])
       else
 	  AC_DEFINE_UNQUOTED(HAVE_SETFONT, $SETFONT)
       fi
@@ -114,7 +114,7 @@ if test "x$enable_fonts" != xfalse; then
 
 	  if test "x$ac_cv_file__usr_lib_kbd_consolefonts" = "xno"; then
 	      if test "x$ac_cv_file__usr_share_consolefonts" = "xno"; then
-		  AC_MSG_WARN([ 
+		  AC_MSG_WARN([
 
 *** You do not appear to have a consolefonts directory in a standard location
 *** (/usr/lib/kbd or /usr/share), even though you appear to have the
@@ -133,7 +133,7 @@ if test "x$enable_fonts" != xfalse; then
 
   if test "x$ac_cv_file__usr_lib_X11_fonts_misc" = "xno"; then
       if test "x$ac_cv_file__usr_X11R6_lib_X11_fonts_misc" = "xno"; then
-	  AC_MSG_WARN([ 
+	  AC_MSG_WARN([
 
 *** You do not appear to have an X window fonts directory in the standard
 *** locations (/usr/share/fonts/misc or /usr/X11R6/lib/X11/fonts/misc). The

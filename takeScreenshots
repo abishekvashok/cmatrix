@@ -73,4 +73,3 @@ do
 	${CMD_CS} "${CAPTURE_FILE_BASE}bold_C_${color}" "-b -C ${color}"
 done
 ${CMD_CS} "${CAPTURE_FILE_BASE}bold_rainbow" "-b -r"
-
