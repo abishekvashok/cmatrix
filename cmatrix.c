@@ -48,7 +48,11 @@
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
 #else
+#ifdef _WIN32
+#include <ncurses/curses.h>
+#else
 #include <curses.h>
+#endif
 #endif
 
 #ifdef HAVE_SYS_IOCTL_H
@@ -420,6 +424,11 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
+
+    /* Clear TERM variable on Windows */
+#ifdef _WIN32
+    _putenv_s("TERM", "");
+#endif
 
     if (force && strcmp("linux", getenv("TERM"))) {
 #ifdef _WIN32

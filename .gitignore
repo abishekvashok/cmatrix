@@ -25,6 +25,7 @@ cscope.in.out
 cscope.po.out
 cscope.files
 cmatrix
+cmatrix.exe
 *.o
 *.core
 CMakeCache.txt

@@ -78,6 +78,11 @@ if test "$ac_cv_prog_CC" = gcc -o "$ac_cv_prog_CC" = g++; then
   CFLAGS="$CFLAGS -Wall -Wno-comment"
 fi
 
+dnl Build static executable on native Windows
+if test x$native_windows != xno; then
+  CFLAGS="$CFLAGS -static"
+fi
+
 dnl cmatrix terminal font disable option (default enabled)
 AC_ARG_WITH([fonts],
 	AS_HELP_STRING([--without-fonts], [Install cmatrix without cmatrix font]),
