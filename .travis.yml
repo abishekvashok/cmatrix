@@ -1,3 +1,6 @@
+arch:
+  - amd64
+  - ppc64le
 language: c
 
 os:
@@ -24,4 +27,3 @@ script:
         mkdir build && cd build && cmake -DCMAKE_C_COMPILER="${CC}" ..
       fi
   - make
-

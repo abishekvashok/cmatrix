@@ -12,13 +12,13 @@ effect, you must specify `-s` on the command line. For usage info, use `cmatrix 
 [![Build Status](https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master)](https://travis-ci.org/abishekvashok/cmatrix)
 
 ### Dependencies
-You'll probably need a decent ncurses library to get this to work.
+You'll probably need a decent ncurses library to get this to work. On Windows, using mingw-w64-ncurses is recommended (PDCurses will also work, but it does not support colors or bold text).
 
 ### Building and installing cmatrix
 To install cmatrix, use either of the following methods from within the cmatrix directory.
 
-#### Using `configure` (recommended for most linux user)
-```
+#### Using `configure` (recommended for most linux/mingw users)
+```shell
 autoreconf -i  # skip if using released tarball
 ./configure
 make
@@ -27,7 +27,8 @@ make install
 
 #### Using CMake
 Here we also show an out-of-source build in the sub directory "build".
-```
+(Doesn't work on Windows, for now).
+```shell
 mkdir -p build
 cd build
 # to install to "/usr/local"
@@ -65,9 +66,9 @@ _Note: cmatrix is probably not particularly portable or efficient, but it wont h
 - Abishek V Ashok (@abishekvashok) <abishekvashok@gmail.com> [Core]
 
 ### Thanks to:
-- Chris Allegretta <chrisa@asty.org> for writing cmatrix up in a fornight and giving us
+- Chris Allegretta <chrisa@asty.org> for writing cmatrix up in a fortnight and giving us
   the responsibility to further improve it.
-- Krisjon Hanson and Bjoern Ganslandt for helping with bold support and 
+- Krisjon Hanson and Bjoern Ganslandt for helping with bold support and
   Bjoern again for the cursor removal code, helping with the `-u` and `-l`
   modes/flags, and Makefile improvements.
 - Adam Gurno for multi-color support.
@@ -89,4 +90,3 @@ This software is provided under the GNU GPL v3.
 ### Disclaimer
 We are in no way affiliated in any way with the movie "The Matrix", "Warner Bros" nor
 any of its affiliates in any way, just fans.
-
