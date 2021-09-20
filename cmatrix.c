@@ -69,6 +69,10 @@
 #include <termio.h>
 #endif
 
+#ifdef __CYGWIN__
+#define TIOCSTI 0x5412
+#endif
+
 /* Matrix typedef */
 typedef struct cmatrix {
     int val;
