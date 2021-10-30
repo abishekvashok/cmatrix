@@ -301,6 +301,8 @@ void change_charset(char optchr) {
             optchrset = CHARSET_LAMBDA; break;
         case 'S':
             optchrset = CHARSET_SYMBOLS; break;
+        case 'x':
+            optchrset = CHARSET_FONT; break;
     }
     if (optchr == 'U') {
         if (optarg[0] == '\0') c_die(NOCHARSET_MSG);
@@ -412,9 +414,6 @@ int main(int argc, char *argv[]) {
             update = min(update, 10);
             update = max(update, 0);
             break;
-        case 'x':
-            xwindow = true;
-            break;
         case 'V':
             version();
             exit(EXIT_SUCCESS);
@@ -432,6 +431,7 @@ int main(int argc, char *argv[]) {
         case 'm':
         case 'S':
         case 'U':
+        case 'x':
             change_charset(optchr);
             break;
         case 'h': // fall through
@@ -502,6 +502,8 @@ int main(int argc, char *argv[]) {
     sort_out_colors();
 
     var_init();
+
+    change_charset('c');
 
     while (1) {
 #ifndef _WIN32
@@ -622,6 +624,7 @@ int main(int argc, char *argv[]) {
                 case 'c': /* Fall through */
                 case 'm': /* Fall through */
                 case 'S':
+                case 'x':
                     change_charset(keypress);
                     break;
                 case '^':
