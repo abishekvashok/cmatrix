@@ -1,11 +1,11 @@
-# CMatrix
+# `cmatrix`
 
-CMatrix is based on the screensaver from The Matrix website. It shows text
+`cmatrix` is based on the screensaver from The Matrix website. It shows text
 flying in and out in a terminal like as seen in "The Matrix" movie. It can
 scroll lines all at the same rate or asynchronously and at a user-defined
 speed.
 
-CMatrix by default operates in **eye candy** mode.  It must be aborted with
+`cmatrix` by default operates in **eye candy** mode.  It must be aborted with
 control-c (Ctrl+C) or by pressing q.  If you wish for more of a screen saver
 effect, you must specify `-s` on the command line. For usage info, use `cmatrix -h`.
 

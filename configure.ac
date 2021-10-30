@@ -4,6 +4,7 @@ AC_INIT([cmatrix], [2.0], [abishekvashok@gmail.com])
 AC_CONFIG_SRCDIR([cmatrix.c])
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE
+AM_GNU_GETTEXT([external], [])
 
 AC_CANONICAL_HOST
 case $host in

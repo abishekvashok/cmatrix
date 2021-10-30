@@ -3,6 +3,7 @@
 
     Copyright (C) 1999-2017 Chris Allegretta
     Copyright (C) 2017-Present Abishek V Ashok
+    Copyright (c) 2019-2021 Fredrick R. Brennan (copypaste@kittens.ph>
 
     This file is part of cmatrix.
 
@@ -21,9 +22,11 @@
 
 */
 
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
@@ -32,13 +35,19 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <locale.h>
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+
+#include "cmatrix.h"
+#include "util.h"
+#include "charset.h"
+
+#ifdef HAVE_CMATRIX_CONFIG_H
+#include "config.h"
 #endif
 
-#ifndef EXCLUDE_CONFIG_H
-#include "config.h"
+#ifdef _WIN32
+// https://stackoverflow.com/questions/11040133/what-does-defining-win32-lean-and-mean-exclude-exactly
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #endif
 
 #ifdef HAVE_GETOPT_H
@@ -63,6 +72,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef HAVE_LIBINTL_H
+#include <libintl.h>
+#endif
+
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #elif defined(HAVE_TERMIO_H)
@@ -73,37 +86,41 @@
 #define TIOCSTI 0x5412
 #endif
 
+static const char* LOCKED_MSG = _("Computer locked.");
+static const char* LOCKEDNODIE_MSG = _("Cannot die, locked.");
+static const char* LOCKEDKILL_MSG = _("Killed while locked!");
+static const char* NORESIZE_MSG = _("Cannot resize window!");
+static const char* NOTTYFONTSET_MSG = _("Unable to use both \"setfont\" and \"consolechars\".");
+static const char* INVALIDCOLOR_MSG = _("Invalid color selection!\n"
+                                      "Valid colors are green, red, blue, "
+                                      "white, yellow, cyan, magenta " "and black.\n");
+static const char* INVALIDUPDATE_MSG = _("Update speed invalid");
+static const char* NOCHARSET_MSG = _("Invalid/no charset!");
+
 /* Matrix typedef */
-typedef struct cmatrix {
+typedef struct cmatrix_cell {
     int val;
     bool is_head;
-} cmatrix;
+} cmatrix_cell;
 
 /* Global variables */
-int console = 0;
-int xwindow = 0;
-int lock = 0;
-cmatrix **matrix = (cmatrix **) NULL;
+bool console = false;
+bool xwindow = false;
+bool locked = false;
+cmatrix_cell **matrix = NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
 int *updates = NULL; /* What does this do again? */
+size_t frame = 1;
+static char **user_charset = NULL;
+static size_t charset_len = 0;
 #ifndef _WIN32
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
+size_t frame_signaled = 0;
 #endif
 
-int va_system(char *str, ...) {
-
-    va_list ap;
-    char buf[133];
-
-    va_start(ap, str);
-    vsnprintf(buf, sizeof(buf), str, ap);
-    va_end(ap);
-    return system(buf);
-}
-
 /* What we do when we're all set to exit */
-void finish(void) {
+void cleanup() {
     curs_set(1);
     clear();
     refresh();
@@ -116,75 +133,11 @@ void finish(void) {
         va_system("setfont");
 #endif
     }
-    exit(0);
 }
 
-/* What we do when we're all set to exit */
-void c_die(char *msg, ...) {
-
-    va_list ap;
-
-    curs_set(1);
-    clear();
-    refresh();
-    resetty();
-    endwin();
-
-    if (console) {
-#ifdef HAVE_CONSOLECHARS
-        va_system("consolechars -d");
-#elif defined(HAVE_SETFONT)
-        va_system("setfont");
-#endif
-    }
-
-    va_start(ap, msg);
-    vfprintf(stderr, msg, ap);
-    va_end(ap);
-    exit(0);
-}
-
-void usage(void) {
-    printf(" Usage: cmatrix -[abBcfhlsmVxk] [-u delay] [-C color] [-t tty] [-M message]\n");
-    printf(" -a: Asynchronous scroll\n");
-    printf(" -b: Bold characters on\n");
-    printf(" -B: All bold characters (overrides -b)\n");
-    printf(" -c: Use Japanese characters as seen in the original matrix. Requires appropriate fonts\n");
-    printf(" -f: Force the linux $TERM type to be on\n");
-    printf(" -l: Linux mode (uses matrix console font)\n");
-    printf(" -L: Lock mode (can be closed from another terminal)\n");
-    printf(" -o: Use old-style scrolling\n");
-    printf(" -h: Print usage and exit\n");
-    printf(" -n: No bold characters (overrides -b and -B, default)\n");
-    printf(" -s: \"Screensaver\" mode, exits on first keystroke\n");
-    printf(" -x: X window mode, use if your xterm is using mtx.pcf\n");
-    printf(" -V: Print version information and exit\n");
-    printf(" -M [message]: Prints your message in the center of the screen. Overrides -L's default message.\n");
-    printf(" -u delay (0 - 10, default 4): Screen update delay\n");
-    printf(" -C [color]: Use this color for matrix (default green)\n");
-    printf(" -r: rainbow mode\n");
-    printf(" -m: lambda mode\n");
-    printf(" -k: Characters change while scrolling. (Works without -o opt.)\n");
-    printf(" -t [tty]: Set tty to use\n");
-}
-
-void version(void) {
-    printf(" CMatrix version %s (compiled %s, %s)\n",
-        VERSION, __TIME__, __DATE__);
-    printf("Email: abishekvashok@gmail.com\n");
-    printf("Web: https://github.com/abishekvashok/cmatrix\n");
-}
-
-
-/* nmalloc from nano by Big Gaute */
-void *nmalloc(size_t howmuch) {
-    void *r;
-
-    if (!(r = malloc(howmuch))) {
-        c_die("CMatrix: malloc: out of memory!");
-    }
-
-    return r;
+void finish() {
+    cleanup();
+    exit(EXIT_SUCCESS);
 }
 
 /* Initialize the global variables */
@@ -196,8 +149,8 @@ void var_init() {
         free(matrix);
     }
 
-    matrix = nmalloc(sizeof(cmatrix *) * (LINES + 1));
-    matrix[0] = nmalloc(sizeof(cmatrix) * (LINES + 1) * COLS);
+    matrix = nmalloc(sizeof(cmatrix_cell *) * (LINES + 1));
+    matrix[0] = nmalloc(sizeof(cmatrix_cell) * (LINES + 1) * COLS);
     for (i = 1; i <= LINES; i++) {
         matrix[i] = matrix[i - 1] + COLS;
     }
@@ -237,14 +190,43 @@ void var_init() {
         /* And set updates[] array for update speed. */
         updates[j] = (int) rand() % 3 + 1;
     }
-
 }
 
 #ifndef _WIN32
 void sighandler(int s) {
     signal_status = s;
+    frame_signaled = frame;
+}
+bool clearsignal() {
+    if (signal_status > 0 && frame > frame_signaled + 10) {
+        signal_status = 0;
+        return true;
+    }
+    return false;
 }
 #endif
+
+static const short LIGHTER_COLOR_OFFSET_INDEX = 8;
+void sort_out_colors() {
+    if (has_colors()) {
+        start_color();
+        /* Add in colors, if available */
+#ifdef HAVE_USE_DEFAULT_COLORS
+        if (use_default_colors() != ERR) {
+            for (int i = 0; i < 255; i++) { 
+                init_pair(i, i, -1);
+            }
+        } else {
+#endif
+            for (int i = 0; i < 255; i++) { 
+                init_pair(i, i, COLOR_BLACK);
+            }
+#ifdef HAVE_USE_DEFAULT_COLORS
+	}
+#endif
+        init_pair(255, COLOR_BLACK, COLOR_WHITE);
+    }
+}
 
 void resize_screen(void) {
 #ifdef _WIN32
@@ -297,7 +279,7 @@ void resize_screen(void) {
     resizeterm(LINES, COLS);
 #ifdef HAVE_WRESIZE
     if (wresize(stdscr, LINES, COLS) == ERR) {
-        c_die("Cannot resize window!");
+        c_die(NORESIZE_MSG);
     }
 #endif /* HAVE_WRESIZE */
 #endif /* HAVE_RESIZETERM */
@@ -308,50 +290,74 @@ void resize_screen(void) {
     refresh();
 }
 
+void change_charset(char optchr) {
+    enum CHARSET optchrset;
+    switch (optchr) {
+        case 'A':
+            optchrset = CHARSET_ASCII; break;
+        case 'c':
+            optchrset = CHARSET_KATAKANA; break;
+        case 'm':
+            optchrset = CHARSET_LAMBDA; break;
+        case 'S':
+            optchrset = CHARSET_SYMBOLS; break;
+    }
+    if (optchr == 'U') {
+        if (optarg[0] == '\0') c_die(NOCHARSET_MSG);
+        user_charset = expand_charset(optarg);
+    }
+    else if (optchr == 'm') user_charset = expand_charset(strdup("λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ λ"));
+    else user_charset = expand_charset(charset_to_string(CHARSETS[optchrset]));
+    charset_len = 0;
+    for (char** ptr = user_charset; *ptr != NULL && **ptr != '\0'; ptr++) {
+        charset_len++;
+    }
+    var_init();
+    clear();
+    refresh();
+}
+
 int main(int argc, char *argv[]) {
-    int i, y, z, optchr, keypress;
-    int j = 0;
+    char optchr, keypress;
     int count = 0;
-    int screensaver = 0;
-    int asynch = 0;
-    int bold = 0;
-    int force = 0;
-    int firstcoldone = 0;
-    int oldstyle = 0;
-    int random = 0;
-    int update = 4;
-    int highnum = 0;
+    unsigned short update = 4;
     int mcolor = COLOR_GREEN;
-    int rainbow = 0;
-    int lambda = 0;
-    int randnum = 0;
-    int randmin = 0;
-    int pause = 0;
-    int classic = 0;
-    int changes = 0;
+
     char *msg = "";
     char *tty = NULL;
 
+    enum BOLD_STATE bold = BOLD_RANDOM;
+    bool screensaver = false;
+    bool asynch = false;
+    bool force = false;
+    bool oldstyle = false;
+    bool rainbow = false;
+    bool lambda = false;
+    bool pause = false;
+    bool classic = false;
+    bool changes = false;
+    bool inverted_heading = false;
+
     srand((unsigned) time(NULL));
     setlocale(LC_ALL, "");
+    bindtextdomain (PACKAGE, LOCALEDIR);
+    textdomain (PACKAGE);
 
-    /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
-    opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVM:u:C:t:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "aAbBcfhilLnrosSmxkVM:u:U:C:t:")) != EOF) {
         switch (optchr) {
         case 's':
-            screensaver = 1;
+            screensaver = true;
             break;
         case 'a':
-            asynch = 1;
+            asynch = true;
             break;
         case 'b':
-            if (bold != 2) {
-                bold = 1;
+            if (bold != ALL_BOLD) {
+                bold = BOLD_RANDOM;
             }
             break;
         case 'B':
-            bold = 2;
+            bold = ALL_BOLD;
             break;
         case 'C':
             if (!strcasecmp(optarg, "green")) {
@@ -371,61 +377,68 @@ int main(int argc, char *argv[]) {
             } else if (!strcasecmp(optarg, "black")) {
                 mcolor = COLOR_BLACK;
             } else {
-                c_die(" Invalid color selection\n Valid "
-                       "colors are green, red, blue, "
-                       "white, yellow, cyan, magenta " "and black.\n");
+                c_die(INVALIDCOLOR_MSG);
             }
             break;
-        case 'c':
-            classic = 1;
-            break;
         case 'f':
-            force = 1;
+            force = true;
+            break;
+        case 'i':
+            inverted_heading = true;
             break;
         case 'l':
-            console = 1;
+            console = true;
             break;
         case 'L':
-            lock = 1;
+            locked = true;
             //if -M was used earlier, don't override it
-            if (0 == strncmp(msg, "", 1)) {
-                msg = "Computer locked.";
+            if (msg[0] == '\0') {
+                msg = (char*)gettext(LOCKED_MSG);
             }
             break;
         case 'M':
             msg = strdup(optarg);
             break;
         case 'n':
-            bold = -1;
+            bold = NO_BOLD;
             break;
-        case 'h':
-        case '?':
-            usage();
-            exit(0);
         case 'o':
-            oldstyle = 1;
+            oldstyle = true;
             break;
         case 'u':
-            update = atoi(optarg);
+            char* next;
+            update = strtol(optarg, &next, 10);
+            if (*next != '\0') c_die(INVALIDUPDATE_MSG);
+            update = min(update, 10);
+            update = max(update, 0);
             break;
         case 'x':
-            xwindow = 1;
+            xwindow = true;
             break;
         case 'V':
             version();
-            exit(0);
+            exit(EXIT_SUCCESS);
         case 'r':
-            rainbow = 1;
-            break;
-        case 'm':
-            lambda = 1;
+            rainbow = true;
             break;
         case 'k':
-            changes = 1;
+            changes = true;
             break;
         case 't':
             tty = optarg;
             break;
+        case 'A':
+        case 'c':
+        case 'm':
+        case 'S':
+        case 'U':
+            change_charset(optchr);
+            break;
+        case 'h': // fall through
+        case '?':
+        default:
+            usage();
+            exit(EINVAL);
         }
     }
 
@@ -439,7 +452,7 @@ int main(int argc, char *argv[]) {
         SetEnvironmentVariableW(L"TERM", L"linux");
 #else
         /* setenv is much more safe to use than putenv */
-        setenv("TERM", "linux", 1);
+        //setenv("TERM", "linux", 1);
 #endif
     }
     if (tty) {
@@ -454,8 +467,9 @@ int main(int argc, char *argv[]) {
         if (ttyscr == NULL)
             exit(EXIT_FAILURE);
         set_term(ttyscr);
-    } else
+    } else {
         initscr();
+    }
     savetty();
     nonl();
 #ifdef _WIN32
@@ -468,89 +482,57 @@ int main(int argc, char *argv[]) {
     leaveok(stdscr, TRUE);
     curs_set(0);
 #ifndef _WIN32
+    signal(SIGTERM, sighandler);
     signal(SIGINT, sighandler);
     signal(SIGQUIT, sighandler);
     signal(SIGWINCH, sighandler);
     signal(SIGTSTP, sighandler);
 #endif
 
-if (console) {
+    if (console) {
 #ifdef HAVE_CONSOLECHARS
-        if (va_system("consolechars -f matrix") != 0) {
-            c_die
-                (" There was an error running consolechars. Please make sure the\n"
-                 " consolechars program is in your $PATH.  Try running \"consolechars -f matrix\" by hand.\n");
-        }
+        cmd_or_die("consolechars", "consolechars -f matrix");
 #elif defined(HAVE_SETFONT)
-        if (va_system("setfont matrix") != 0) {
-            c_die
-                (" There was an error running setfont. Please make sure the\n"
-                 " setfont program is in your $PATH.  Try running \"setfont matrix\" by hand.\n");
-        }
+        cmd_or_die("setfont", "setfont matrix");
 #else
-        c_die(" Unable to use both \"setfont\" and \"consolechars\".\n");
+        c_die(NOTTYFONTSET_MSG);
 #endif
-}
-    if (has_colors()) {
-        start_color();
-        /* Add in colors, if available */
-#ifdef HAVE_USE_DEFAULT_COLORS
-        if (use_default_colors() != ERR) {
-            init_pair(COLOR_BLACK, -1, -1);
-            init_pair(COLOR_GREEN, COLOR_GREEN, -1);
-            init_pair(COLOR_WHITE, COLOR_WHITE, -1);
-            init_pair(COLOR_RED, COLOR_RED, -1);
-            init_pair(COLOR_CYAN, COLOR_CYAN, -1);
-            init_pair(COLOR_MAGENTA, COLOR_MAGENTA, -1);
-            init_pair(COLOR_BLUE, COLOR_BLUE, -1);
-            init_pair(COLOR_YELLOW, COLOR_YELLOW, -1);
-        } else {
-#else
-        { /* Hack to deal the after effects of else in HAVE_USE_DEFAULT_COLOURS */
-#endif
-            init_pair(COLOR_BLACK, COLOR_BLACK, COLOR_BLACK);
-            init_pair(COLOR_GREEN, COLOR_GREEN, COLOR_BLACK);
-            init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
-            init_pair(COLOR_RED, COLOR_RED, COLOR_BLACK);
-            init_pair(COLOR_CYAN, COLOR_CYAN, COLOR_BLACK);
-            init_pair(COLOR_MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
-            init_pair(COLOR_BLUE, COLOR_BLUE, COLOR_BLACK);
-            init_pair(COLOR_YELLOW, COLOR_YELLOW, COLOR_BLACK);
-        }
     }
 
-    /* Set up values for random number generation */
-    if (classic) {
-        /* Japanese character unicode range [they are seen in the original cmatrix] */
-        randmin = 12288;
-        highnum = 12351;
-    } else if (console || xwindow) {
-        randmin = 166;
-        highnum = 217;
-    } else {
-        randmin = 33;
-        highnum = 123;
-    }
-    randnum = highnum - randmin;
+    sort_out_colors();
 
     var_init();
 
     while (1) {
 #ifndef _WIN32
+        bool cleared = clearsignal();
         /* Check for signals */
-        if (signal_status == SIGINT || signal_status == SIGQUIT) {
-            if (lock != 1)
-                finish();
-            /* exits */
-        }
         if (signal_status == SIGWINCH) {
             resize_screen();
             signal_status = 0;
         }
 
-        if (signal_status == SIGTSTP) {
-            if (lock != 1)
-                    finish();
+        if (!locked) {
+            if (signal_status == SIGINT || signal_status == SIGQUIT) {
+                finish();
+                /* exits */
+            }
+    
+            if (signal_status == SIGTSTP) {
+                finish();
+            }
+        } else {
+            if (signal_status == SIGINT || signal_status == SIGQUIT) {
+                attron(COLOR_PAIR(COLOR_YELLOW));
+                mvaddstr(1, 1, LOCKEDNODIE_MSG);
+                attroff(COLOR_PAIR(COLOR_YELLOW));
+            } else if (signal_status == SIGTERM) {
+                c_die(LOCKEDKILL_MSG);
+            } else if (cleared) {
+                for (int ci = 0; ci < strlen(LOCKEDKILL_MSG); ci++) {
+                    mvaddch(1, 1+ci, ' ');
+                }
+            }
         }
 #endif
 
@@ -560,7 +542,7 @@ if (console) {
         }
 
         if ((keypress = wgetch(stdscr)) != ERR) {
-            if (screensaver == 1) {
+            if (screensaver) {
 #ifdef USE_TIOCSTI
                 char *str = malloc(0);
                 size_t str_len = 0;
@@ -568,8 +550,7 @@ if (console) {
                     str = realloc(str, str_len + 1);
                     str[str_len++] = keypress;
                 } while ((keypress = wgetch(stdscr)) != ERR);
-                size_t i;
-                for (i = 0; i < str_len; i++)
+                for (size_t i = 0; i < str_len; i++)
                     ioctl(STDIN_FILENO, TIOCSTI, (char*)(str + i));
                 free(str);
 #endif
@@ -580,23 +561,27 @@ if (console) {
                 case 3: /* Ctrl-C. Fall through */
 #endif
                 case 'q':
-                    if (lock != 1)
+                    if (!locked)
                         finish();
                     break;
                 case 'a':
-                    asynch = 1 - asynch;
+                    asynch = !asynch;
                     break;
                 case 'b':
-                    bold = 1;
+                    bold = BOLD_RANDOM;
                     break;
                 case 'B':
-                    bold = 2;
+                    bold = ALL_BOLD;
+                    break;
+                case 'i':
+                    inverted_heading = !inverted_heading;
                     break;
                 case 'L':
-                    lock = 1;
+                    locked = true;
+                    msg = (char*)LOCKED_MSG;
                     break;
                 case 'n':
-                    bold = 0;
+                    bold = NO_BOLD;
                     break;
                 case '0': /* Fall through */
                 case '1': /* Fall through */
@@ -608,7 +593,7 @@ if (console) {
                 case '7': /* Fall through */
                 case '8': /* Fall through */
                 case '9':
-                    update = keypress - 48;
+                    update = keypress - '0';
                     break;
                 case '!':
                     mcolor = COLOR_RED;
@@ -631,11 +616,14 @@ if (console) {
                     rainbow = 0;
                     break;
                 case 'r':
-                     rainbow = 1;
-                     break;
-                case 'm':
-                     lambda = !lambda;
-                     break;
+                    rainbow = 1;
+                    break;
+                case 'A': /* Fall through */
+                case 'c': /* Fall through */
+                case 'm': /* Fall through */
+                case 'S':
+                    change_charset(keypress);
+                    break;
                 case '^':
                     mcolor = COLOR_CYAN;
                     rainbow = 0;
@@ -646,21 +634,22 @@ if (console) {
                     break;
                 case 'p':
                 case 'P':
-                    pause = (pause == 0)?1:0;
+                    pause = !pause;
                     break;
-
                 }
             }
         }
-        for (j = 0; j <= COLS - 1; j += 2) {
-            if ((count > updates[j] || asynch == 0) && pause == 0) {
 
+        int random;
+
+        for (int j = 0; j <= COLS - 1; j += 2) {
+            if ((count > updates[j] || !asynch) && !pause) {
                 /* I don't like old-style scrolling, yuck */
                 if (oldstyle) {
-                    for (i = LINES - 1; i >= 1; i--) {
+                    for (int i = LINES - 1; i >= 1; i--) {
                         matrix[i][j].val = matrix[i - 1][j].val;
                     }
-                    random = (int) rand() % (randnum + 8) + randmin;
+                    random = (int) rand() % (charset_len + 8);
 
                     if (matrix[1][j].val == 0) {
                         matrix[0][j].val = 1;
@@ -677,35 +666,30 @@ if (console) {
                             if (((int) rand() % 3) == 1) {
                                 matrix[0][j].val = 0;
                             } else {
-                                matrix[0][j].val = (int) rand() % randnum + randmin;
+                                matrix[0][j].val = (int) rand() % charset_len;
                             }
                             spaces[j] = (int) rand() % LINES + 1;
                         }
-                    } else if (random > highnum && matrix[1][j].val != 1) {
+                    } else if (random > charset_len && matrix[1][j].val != 1) {
                         matrix[0][j].val = ' ';
                     } else {
-                        matrix[0][j].val = (int) rand() % randnum + randmin;
+                        matrix[0][j].val = (int) rand() % charset_len;
                     }
-
                 } else { /* New style scrolling (default) */
-                    if (matrix[0][j].val == -1 && matrix[1][j].val == ' '
-                        && spaces[j] > 0) {
+                    if (matrix[0][j].val == -1 && matrix[1][j].val == ' ' && spaces[j] > 0) {
                         spaces[j]--;
-                    } else if (matrix[0][j].val == -1
-                        && matrix[1][j].val == ' ') {
+                    } else if (matrix[0][j].val == -1 && matrix[1][j].val == ' ') {
                         length[j] = (int) rand() % (LINES - 3) + 3;
-                        matrix[0][j].val = (int) rand() % randnum + randmin;
+                        matrix[0][j].val = (int) rand() % charset_len;
 
                         spaces[j] = (int) rand() % LINES + 1;
                     }
-                    i = 0;
-                    y = 0;
-                    firstcoldone = 0;
+                    int i = 0;
+                    int y = 0;
+                    bool firstcoldone = false;
                     while (i <= LINES) {
-
                         /* Skip over spaces */
-                        while (i <= LINES && (matrix[i][j].val == ' ' ||
-                               matrix[i][j].val == -1)) {
+                        while (i <= LINES && (matrix[i][j].val == ' ' || matrix[i][j].val == -1)) {
                             i++;
                         }
 
@@ -714,14 +698,13 @@ if (console) {
                         }
 
                         /* Go to the head of this column */
-                        z = i;
-                        y = 0;
-                        while (i <= LINES && (matrix[i][j].val != ' ' &&
-                               matrix[i][j].val != -1)) {
+                        int z = i;
+                        int y = 0;
+                        while (i <= LINES && (matrix[i][j].val != ' ' && matrix[i][j].val != -1)) {
                             matrix[i][j].is_head = false;
                             if (changes) {
                                 if (rand() % 8 == 0)
-                                    matrix[i][j].val = (int) rand() % randnum + randmin;
+                                    matrix[i][j].val = (int) rand() % charset_len;
                             }
                             i++;
                             y++;
@@ -732,7 +715,7 @@ if (console) {
                             continue;
                         }
 
-                        matrix[i][j].val = (int) rand() % randnum + randmin;
+                        matrix[i][j].val = (int) rand() % charset_len;
                         matrix[i][j].is_head = true;
 
                         /* If we're at the top of the column and it's reached its
@@ -750,6 +733,7 @@ if (console) {
                 }
             }
             /* A simple hack */
+            int y, z;
             if (!oldstyle) {
                 y = 1;
                 z = LINES;
@@ -757,39 +741,31 @@ if (console) {
                 y = 0;
                 z = LINES - 1;
             }
-            for (i = y; i <= z; i++) {
+            for (int i = y; i <= z; i++) {
                 move(i - y, j);
+                char* stp = NULL;
 
-                if (matrix[i][j].val == 0 || (matrix[i][j].is_head && !rainbow)) {
-                    if (console || xwindow) {
-                        attron(A_ALTCHARSET);
-                    }
-                    attron(COLOR_PAIR(COLOR_WHITE));
-                    if (bold) {
+                if (matrix[i][j].val > -1 && matrix[i][j].val < charset_len && matrix[i][j].val != ' ') {
+                    stp = user_charset[matrix[i][j].val];
+                } else {
+                    stp = " ";
+                }
+                
+                if (matrix[i][j].is_head) {
+                    attron(COLOR_PAIR(inverted_heading?255:COLOR_WHITE));
+                    if (bold >= BOLD_HEADING) {
                         attron(A_BOLD);
                     }
-                    if (matrix[i][j].val == 0) {
-                        if (console || xwindow) {
-                            addch(183);
-                        } else {
-                            addch('&');
-                        }
-                    } else if (matrix[i][j].val == -1) {
-                        addch(' ');
-                    } else {
-                        addch(matrix[i][j].val);
-                    }
+
+                    addstr(stp);
 
                     attroff(COLOR_PAIR(COLOR_WHITE));
                     if (bold) {
                         attroff(A_BOLD);
                     }
-                    if (console || xwindow) {
-                        attroff(A_ALTCHARSET);
-                    }
                 } else {
                     if (rainbow) {
-                        int randomColor = rand() % 6;
+                        int randomColor = (matrix[i][j].val) % 6;
 
                         switch (randomColor) {
                             case 0:
@@ -799,7 +775,7 @@ if (console) {
                                 mcolor = COLOR_BLUE;
                                 break;
                             case 2:
-                                mcolor = COLOR_BLACK;
+                                mcolor = COLOR_RED;
                                 break;
                             case 3:
                                 mcolor = COLOR_YELLOW;
@@ -812,39 +788,28 @@ if (console) {
                                 break;
                        }
                     }
-                    attron(COLOR_PAIR(mcolor));
-                    if (matrix[i][j].val == 1) {
-                        if (bold) {
-                            attron(A_BOLD);
-                        }
-                        addch('|');
-                        if (bold) {
-                            attroff(A_BOLD);
-                        }
-                    } else {
-                        if (console || xwindow) {
-                            attron(A_ALTCHARSET);
-                        }
-                        if (bold == 2 ||
-                            (bold == 1 && matrix[i][j].val % 2 == 0)) {
-                            attron(A_BOLD);
-                        }
-                        if (matrix[i][j].val == -1) {
-                            addch(' ');
-                        } else if (lambda && matrix[i][j].val != ' ') {
-                            addstr("λ");
-                        } else {
-                            addch(matrix[i][j].val);
-                        }
-                        if (bold == 2 ||
-                            (bold == 1 && matrix[i][j].val % 2 == 0)) {
-                            attroff(A_BOLD);
-                        }
-                        if (console || xwindow) {
-                            attroff(A_ALTCHARSET);
-                        }
+
+                    bool onbold = (bold == ALL_BOLD || (bold == BOLD_RANDOM && matrix[i][j].val % 2 == 0));
+                    bool oncolor = HAVE_256COLOR && (matrix[i][j].val % 2 == 0);
+                    if (onbold) {
+                        attron(A_BOLD);
                     }
-                    attroff(COLOR_PAIR(mcolor));
+                    if (oncolor) {
+                        attron(COLOR_PAIR(LIGHTER_COLOR_OFFSET_INDEX+mcolor));
+                    } else {
+                        attron(COLOR_PAIR(mcolor));
+                    }
+
+                    addstr(stp);
+
+                    if (onbold) {
+                        attroff(A_BOLD);
+                    }
+                    if (oncolor) {
+                        attroff(COLOR_PAIR(LIGHTER_COLOR_OFFSET_INDEX+mcolor));
+                    } else {
+                        attroff(COLOR_PAIR(mcolor));
+                    }
                 }
             }
         }
@@ -863,11 +828,9 @@ if (console) {
 
             //Write message
             move(msg_x, msg_y-2);
-            addch(' ');
-            addch(' ');
+            addstr("  ");
             addstr(msg);
-            addch(' ');
-            addch(' ');
+            addstr("  ");
 
             //Add space after message
             move(msg_x+1, msg_y-2);
@@ -875,6 +838,7 @@ if (console) {
                 addch(' ');
         }
 
+        frame++;
         napms(update * 10);
     }
     finish();

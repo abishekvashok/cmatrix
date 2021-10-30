@@ -1,22 +1,27 @@
-# CMake build system for CMatrix
+# CMake build system for cmatrix
 
-cmake_minimum_required(VERSION 2.8)
-
-project(CMatrix LANGUAGES C)
-set(VERSION "2.0")
+cmake_minimum_required(VERSION 2.8.12)
+project(cmatrix LANGUAGES C)
+include(GNUInstallDirs)
+add_definitions(-DPACKAGE="${CMAKE_PROJECT_NAME}")
+set(VERSION "3.0")
 
 # These are relative to CMAKE_INSTALL_PREFIX
 # which by default is "/usr/local"
 set(CONSOLE_FONTS_DIRS "share/consolefonts" "lib/kbd/consolefonts")
 set(X_FONTS_DIRS "lib/X11/fonts/misc" "X11R6/lib/X11/fonts/misc" "share/fonts/X11/misc")
 
-set(MKFONTDIR "/usr/bin/mkfontdir")
+set(MKFONTDIR_BIN "/usr/bin/mkfontdir")
+set(OTFFONTDIR "share/fonts")
+option(USE_GETTEXT "Whether to use gettext (libintl) for i18n if available" ON)
+option(FORCE_INSTALL_X_FONTS "Whether to create X_FONTS_DIRS (${X_FONTS_DIRS}) if they don't exist" OFF)
+option(INSTALL_OTF_FONTS "Whether to install OpenType fonts" ON)
 
 message(STATUS "Looking for include file config.h")
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/config.h")
-    add_definitions(-DEXCLUDE_CONFIG_H)
     message(STATUS "Looking for include file config.h - missing")
 else()
+    add_definitions(-DHAVE_CMATRIX_CONFIG_H)
     message(STATUS "Looking for include file config.h - found")
 endif()
 
@@ -28,6 +33,10 @@ if	(NOT WIN32)
 endif	()
 
 include(CheckIncludeFiles)
+check_include_files("locale.h" HAVE_LOCALE_H)
+if	(HAVE_LOCALE_H)
+	add_definitions(-DHAVE_LOCALE_H)
+endif	()
 check_include_files("sys/ioctl.h" HAVE_SYS_IOCTL_H)
 if	(HAVE_SYS_IOCTL_H)
 	add_definitions(-DHAVE_SYS_IOCTL_H)
@@ -49,16 +58,45 @@ if	(HAVE_GETOPT_H)
 	add_definitions(-DHAVE_GETOPT_H)
 endif	()
 
-Set(CURSES_NEED_NCURSES TRUE)
+set(CURSES_NEED_NCURSES TRUE)
 find_package(Curses)
+include(CheckLibraryExists)
+include(CheckSymbolExists)
 include_directories(${CURSES_INCLUDE_DIR})
 add_definitions(-DHAVE_NCURSES_H)
+check_library_exists("${CURSES_CURSES_LIBRARY}" wresize "" HAVE_WRESIZE)
+check_library_exists("${CURSES_CURSES_LIBRARY}" resizeterm "" HAVE_RESIZETERM)
+check_library_exists("${CURSES_CURSES_LIBRARY}" color_content "" HAVE_COLORCONTENT)
+check_library_exists("${CURSES_CURSES_LIBRARY}" init_color "" HAVE_INITCOLOR)
+if (HAVE_COLORCONTENT AND HAVE_INITCOLOR)
+	add_definitions(-DHAVE_256COLOR)
+endif ()
+if (HAVE_WRESIZE)
+	add_definitions(-DHAVE_WRESIZE)
+endif()
+if (HAVE_RESIZETERM)
+	add_definitions(-DHAVE_RESIZETERM)
+endif()
+
+find_package(Intl)
+if (Intl_FOUND AND USE_GETTEXT)
+	include_directories(AFTER ${Intl_INCLUDE_DIRS})
+	add_definitions(-DHAVE_LIBINTL_H)
+	add_definitions(-DLOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}")
+endif ()
 
 add_executable(cmatrix cmatrix.c)
 
 target_link_libraries(cmatrix ${CURSES_LIBRARIES})
 
-install(TARGETS cmatrix DESTINATION bin)
+install(TARGETS cmatrix DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if (INSTALL_OTF_FONTS)
+	message(STATUS "Installing matrix OTF font to ${CMAKE_INSTALL_PREFIX}/${OTFFONTDIR}")
+	install(FILES
+		"${CMAKE_SOURCE_DIR}/mtx.otb"
+		DESTINATION "${OTFFONTDIR}")
+endif()
 
 if     (UNIX)
 	foreach    (CONSOLE_FONTS_DIR ${CONSOLE_FONTS_DIRS})
@@ -70,18 +108,35 @@ if     (UNIX)
 				DESTINATION "${CONSOLE_FONTS_DIR}")
 		endif  ()
 	endforeach ()
+	list(LENGTH X_FONTS_DIRS x_dirs_len)
+	list(GET X_FONTS_DIRS -1 last_x_dir)
+	if     (x_dirs_len GREATER 1 AND FORCE_INSTALL_X_FONTS)
+		message(WARNING "Only force installing X fonts to last `X_FONTS_DIRS' directory (${CMAKE_INSTALL_PREFIX}/${last_x_dir})")
+		message(DEPRECATION "You should migrate to the OTF font and a terminal that supports it if you rely on the mtx.pcf font")
+	endif  ()
 	foreach    (X_FONTS_DIR ${X_FONTS_DIRS})
-		if     (IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}")
+		set(is_last ${X_FONTS_DIR} STREQUAL ${last_x_dir})
+		if(IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}")
+			set(is_dir TRUE)
+		else()
+			set(is_dir FALSE)
+		endif()
+                message(DEBUG "IS_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}: ${is_dir}")
+		if     ((NOT FORCE_INSTALL_X_FONTS AND is_dir) OR (FORCE_INSTALL_X_FONTS AND X_FONTS_DIR STREQUAL last_x_dir))
 			message(STATUS "Installing matrix X window fonts to ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}")
 			install(FILES
 				"${CMAKE_SOURCE_DIR}/mtx.pcf"
 				DESTINATION "${X_FONTS_DIR}")
-			install(CODE
-				"message(STATUS \"Running mkfontdir ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR} ...\")")
-			install(CODE
-				"execute_process(COMMAND \"${MKFONTDIR}\" \"${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}\")")
-			install(CODE
-				"message(STATUS \"If this is the first time you have installed CMatrix you will probably have to restart X window in order to use the mtx.pcf font.\")")
+			if (NOT EXISTS "${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}/fonts.dir")
+				install(CODE
+					"message(STATUS \"Running mkfontdir ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR} ...\")")
+				install(CODE
+					"execute_process(COMMAND \"${MKFONTDIR_BIN}\" \"${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}\")")
+				install(CODE
+					"message(STATUS \"If this is the first time you have installed `${CMAKE_PROJECT_NAME}` you will probably have to restart X window in order to use the mtx.pcf font.\")")
+			else ()
+				message(STATUS "${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR} already an X11 font directory")
+			endif  ()
 		endif  ()
 	endforeach ()
 endif  ()
