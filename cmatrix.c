@@ -3,7 +3,7 @@
 
     Copyright (C) 1999-2017 Chris Allegretta
     Copyright (C) 2017-Present Abishek V Ashok
-    Copyright (c) 2019-2021 Fredrick R. Brennan (copypaste@kittens.ph>
+    Copyright (c) 2019-2021 Fredrick R. Brennan <copypaste@kittens.ph>
 
     This file is part of cmatrix.
 
