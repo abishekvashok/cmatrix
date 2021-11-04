@@ -13,7 +13,7 @@ set(X_FONTS_DIRS "lib/X11/fonts/misc" "X11R6/lib/X11/fonts/misc" "share/fonts/X1
 
 set(MKFONTDIR_BIN "/usr/bin/mkfontdir")
 set(OTFFONTDIR "share/fonts")
-option(USE_GETTEXT "Whether to use gettext (libintl) for i18n if available" ON)
+option(USE_GETTEXT "Whether to use gettext (libintl) for i18n if available" OFF)
 option(FORCE_INSTALL_X_FONTS "Whether to create X_FONTS_DIRS (${X_FONTS_DIRS}) if they don't exist" OFF)
 option(INSTALL_OTF_FONTS "Whether to install OpenType fonts" ON)
 
