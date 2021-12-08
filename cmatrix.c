@@ -87,12 +87,6 @@ int *updates = NULL; /* What does this do again? */
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
 #endif
 
-#ifdef _WIN32
-char *DELIMITER = "\r\n";
-#else
-char *DELIMITER = "\n";
-#endif
-
 int va_system(char *str, ...) {
 
     va_list ap;
@@ -120,7 +114,6 @@ void finish(void) {
     }
     exit(0);
 }
-
 
 /* What we do when we're all set to exit */
 void c_die(char *msg, ...) {
@@ -901,9 +894,12 @@ if (console) {
                 if(msg[i] == '\n')
                     multiline++;
 
-            char *line = strtok(msg, DELIMITER);
-            if (line == NULL)
-                line = msg;
+            char *line = strtok(msg, "\r\n");
+            if (line == NULL) {
+                line = strtok(msg, "\n");
+                if (line == NULL)
+                    line = msg;
+            }
 
             int x_offset = -1 * multiline/2;
             int msg_x = LINES/2 + x_offset;
@@ -931,7 +927,9 @@ if (console) {
                 for (i = 0; i < strlen(line)+4; i++)
                     addch(' ');
 
-                line = strtok(NULL, DELIMITER);
+                line = strtok(NULL, "\r\n");
+                if (line == NULL)
+                    line = strtok(NULL, "\n");
                 x_offset++;
             }
         }
