@@ -6,9 +6,23 @@ enum CHARSET {
     CHARSET_MAX
 };
 
-//                                                DEFAULT/ASCII KATAKANA           SYMBOLS          LAMBDA          FONT
-//                                                (!    {)      (ｦ       ﾝ)        (、     〾)      (λ      λ)      (¦    Ù)
-static const uint32_t CHARSETS[CHARSET_MAX][2] = {{0x21, 0x7B}, {0xFF66, 0xFF9D}, {0x3001, 0x303E}, {0x3BB, 0x3BB}, {0xA6, 0xD9}};
+// Order determined by CHARSET enum above, starting at 0.
+static const uint32_t CHARSETS[CHARSET_MAX][2] = {
+    // DEFAULT/ASCII
+    // (!  })
+    {0x21, 0x7D},
+    // KATAKANA
+    // (ｦ    ﾝ)
+    {0xFF66, 0xFF9D},
+    // SYMBOLS
+    // (、   〾)
+    {0x3001, 0x303E},
+    // LAMBDA (λ)
+    {0x3BB, 0x3BB},
+    // FONT
+    // (¦  Ù)
+    {0xA6, 0xD9}
+};
 
 char* codepoint_to_str(uint32_t ch) {
     short len = 1;
