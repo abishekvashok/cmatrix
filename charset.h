@@ -90,7 +90,7 @@ char* charset_to_string(const uint32_t charset[2]) {
         char* cp = codepoint_to_str(i);
         strcpy(pt, cp);
         while (*pt != '\0') pt++;
-        if (i != maxc - 1) {
+        if (i != maxc) {
             *pt++ = ' ';
         }
     }
