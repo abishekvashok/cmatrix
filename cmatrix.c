@@ -50,7 +50,11 @@
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
 #else
+#ifdef _WIN32
+#include <ncurses/curses.h>
+#else
 #include <curses.h>
+#endif
 #endif
 
 #ifdef HAVE_SYS_IOCTL_H
@@ -65,6 +69,10 @@
 #include <termios.h>
 #elif defined(HAVE_TERMIO_H)
 #include <termio.h>
+#endif
+
+#ifdef __CYGWIN__
+#define TIOCSTI 0x5412
 #endif
 
 /* Matrix typedef */
@@ -247,7 +255,7 @@ void resize_screen(void) {
     CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
 
     hStdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    if(hStdHandle == INVALID_HANDLE_VALUE)
+    if (hStdHandle == INVALID_HANDLE_VALUE)
         return;
 #else
     char *tty;
@@ -261,7 +269,7 @@ void resize_screen(void) {
 #endif
 #ifdef _WIN32
     result = GetConsoleScreenBufferInfo(hStdHandle, &csbiInfo);
-    if(!result)
+    if (!result)
         return;
     LINES = csbiInfo.dwSize.Y;
     COLS = csbiInfo.dwSize.X;
@@ -280,10 +288,10 @@ void resize_screen(void) {
     LINES = win.ws_row;
 #endif
 
-    if(LINES <10){
+    if (LINES < 10) {
         LINES = 10;
     }
-    if(COLS <10){
+    if (COLS < 10) {
         COLS = 10;
     }
 
@@ -423,6 +431,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /* Clear TERM variable on Windows */
+#ifdef _WIN32
+    _putenv_s("TERM", "");
+#endif
+
     if (force && strcmp("linux", getenv("TERM"))) {
 #ifdef _WIN32
         SetEnvironmentVariableW(L"TERM", L"linux");
@@ -495,7 +508,7 @@ if (console) {
             init_pair(COLOR_YELLOW, COLOR_YELLOW, -1);
         } else {
 #else
-        { /* Hack to deal the after effects of else in HAVE_USE_DEFAULT_COLOURS*/
+        { /* Hack to deal the after effects of else in HAVE_USE_DEFAULT_COLOURS */
 #endif
             init_pair(COLOR_BLACK, COLOR_BLACK, COLOR_BLACK);
             init_pair(COLOR_GREEN, COLOR_GREEN, COLOR_BLACK);
@@ -509,7 +522,7 @@ if (console) {
     }
 
     /* Set up values for random number generation */
-    if(classic) {
+    if (classic) {
         /* Half-width kana characters. In the movie they are y-axis flipped, and
          * they appear alongside latin characters and numerals, but this is the
          * closest we can do with a standard unicode set and a single number
@@ -531,7 +544,7 @@ if (console) {
 #ifndef _WIN32
         /* Check for signals */
         if (signal_status == SIGINT || signal_status == SIGQUIT) {
-            if(lock != 1)
+            if (lock != 1)
                 finish();
             /* exits */
         }
@@ -540,8 +553,8 @@ if (console) {
             signal_status = 0;
         }
 
-        if(signal_status == SIGTSTP){
-            if(lock != 1)
+        if (signal_status == SIGTSTP) {
+            if (lock != 1)
                     finish();
         }
 #endif
@@ -572,7 +585,7 @@ if (console) {
                 case 3: /* Ctrl-C. Fall through */
 #endif
                 case 'q':
-                    if(lock != 1)
+                    if (lock != 1)
                         finish();
                     break;
                 case 'a':
@@ -647,7 +660,7 @@ if (console) {
         for (j = 0; j <= COLS - 1; j += 2) {
             if ((count > updates[j] || asynch == 0) && pause == 0) {
 
-                /* I dont like old-style scrolling, yuck */
+                /* I don't like old-style scrolling, yuck */
                 if (oldstyle) {
                     for (i = LINES - 1; i >= 1; i--) {
                         matrix[i][j].val = matrix[i - 1][j].val;
@@ -711,8 +724,8 @@ if (console) {
                         while (i <= LINES && (matrix[i][j].val != ' ' &&
                                matrix[i][j].val != -1)) {
                             matrix[i][j].is_head = false;
-                            if(changes) {
-                                if(rand() % 8 == 0)
+                            if (changes) {
+                                if (rand() % 8 == 0)
                                     matrix[i][j].val = (int) rand() % randnum + randmin;
                             }
                             i++;
@@ -780,10 +793,10 @@ if (console) {
                         attroff(A_ALTCHARSET);
                     }
                 } else {
-                    if(rainbow) {
+                    if (rainbow) {
                         int randomColor = rand() % 6;
 
-                        switch(randomColor){
+                        switch (randomColor) {
                             case 0:
                                 mcolor = COLOR_GREEN;
                                 break;
@@ -850,7 +863,7 @@ if (console) {
         }
 
         //check if -M and/or -L was used
-        if (msg[0] != '\0'){
+        if (msg[0] != '\0') {
             //Add our message to the screen
             int msg_x = LINES/2;
             int msg_y = COLS/2 - strlen(msg)/2;
@@ -858,7 +871,7 @@ if (console) {
 
             //Add space before message
             move(msg_x-1, msg_y-2);
-            for(i = 0; i < strlen(msg)+4; i++)
+            for (i = 0; i < strlen(msg)+4; i++)
                 addch(' ');
 
             //Write message
@@ -871,7 +884,7 @@ if (console) {
 
             //Add space after message
             move(msg_x+1, msg_y-2);
-            for(i = 0; i < strlen(msg)+4; i++)
+            for (i = 0; i < strlen(msg)+4; i++)
                 addch(' ');
         }
 
@@ -879,4 +892,3 @@ if (console) {
     }
     finish();
 }
-
