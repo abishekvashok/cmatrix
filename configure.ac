@@ -134,7 +134,7 @@ if test "x$enable_fonts" != xfalse; then
   fi
 
   AC_PATH_PROG(MKFONTDIR, mkfontdir, "", $PATH:/usr/bin:/usr/bin/X11:/usr/local/bin/X11:/usr/X11R6/bin:/usr/local/bin:/sbin:/usr/sbin)
-  AC_CHECK_FILES([/usr/share/fonts/misc /usr/X11R6/lib/X11/fonts/misc])
+  AC_CHECK_FILES([/usr/share/fonts/misc /usr/share/X11/fonts/misc /usr/X11R6/lib/X11/fonts/misc])
 
   if test "x$ac_cv_file__usr_lib_X11_fonts_misc" = "xno"; then
       if test "x$ac_cv_file__usr_X11R6_lib_X11_fonts_misc" = "xno"; then

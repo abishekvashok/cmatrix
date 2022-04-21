@@ -34,6 +34,14 @@ install-data-local:
 	    		$(INSTALL_DATA) $(srcdir)/mtx.pcf $(DESTDIR)/usr/share/fonts/misc; \
 	    		echo " Done.  If this is the first time you have installed CMatrix you will"; \
 	    		echo " probably have to restart X window in order to use the mtx.pcf font."; \
+		elif test -d /usr/share/X11/fonts/misc; then \
+	    		echo " Installing X window matrix fonts in /usr/share/X11/fonts/misc..."; \
+	    		echo " Running mkfontdir /usr/share/X11/fonts/misc..."; \
+	    		$(MKFONTDIR) $(DESTDIR)/usr/share/X11/fonts/misc; \
+	    		$(INSTALL_DATA) $(srcdir)/mtx.pcf $(DESTDIR)/usr/share/X11/fonts/misc; \
+	    		$(INSTALL_DATA) $(srcdir)/mtx.pcf $(DESTDIR)/usr/share/X11/fonts/misc; \
+	    		echo " Done.  If this is the first time you have installed CMatrix you will"; \
+	    		echo " probably have to restart X window in order to use the mtx.pcf font."; \
 		else \
 			if test -d /usr/X11R6/lib/X11/fonts/misc; then \
 	    			echo " Installing X window matrix fonts in /usr/X11R6/lib/X11/fonts/misc..."; \
