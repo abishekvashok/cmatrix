@@ -1,16 +1,24 @@
 <h1 align="center">CMatrix</h1>
 
-<center>
+<h3 align="center"> Matrix like effect in your terminal </h3>
 
-### Matrix like effect in your terminal
+</p>
+<p align="center">
+  <a href="https://travis-ci.org/abishekvashok/cmatrix">
+    <img src="https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master">
+  </a>
+  <a href="./COPYING">
+    <img src="https://img.shields.io/github/license/abishekvashok/cmatrix?color=blue">
+  </a>
+  <img src="https://img.shields.io/badge/contributions-welcome-orange">
+  <a href="https://github.com/abishekvashok/cmatrix/stargazers">
+    <img src="https://img.shields.io/github/stars/abishekvashok/cmatrix">
+  </a>
+  <a href="https://github.com/abishekvashok/cmatrix/network">
+    <img src="https://img.shields.io/github/forks/abishekvashok/cmatrix">
+  </a>
+</p>
 
-[![Build Status](https://travis-ci.org/abishekvashok/cmatrix.svg?branch=master)](https://travis-ci.org/abishekvashok/cmatrix)
-[![GitHub license](https://img.shields.io/github/license/abishekvashok/cmatrix?color=blue)](https://github.com/abishekvashok/cmatrix/blob/master/COPYING)
-![Contributions](https://img.shields.io/badge/contributions-welcome-orange)<br>
-[![GitHub stars](https://img.shields.io/github/stars/abishekvashok/cmatrix)](https://github.com/abishekvashok/cmatrix/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/abishekvashok/cmatrix)](https://github.com/abishekvashok/cmatrix/network)
-
-</center>
 
 ![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png)
 
@@ -116,27 +124,29 @@ _To get the program to look most like the Win/Mac screensaver, use `cmatrix -ol`
 #### :small_blue_diamond: Screenshots
 
 <!-- ![Special Font & bold](data/img/capture_bold_font.png?raw=true "cmatrix -bx") -->
-<center>
+<p align="center">
 <img src="./data/img/capture_bold_font.png" alt="cmatrix screenshot">
-</center>
+</p>
 
 #### :small_blue_diamond: Screencasts
 
 <!-- ![Movie-Like Cast](data/img/capture_orig.gif?raw=true "cmatrix -xba") -->
-<center>
+<p align="center">
 <img src="./data/img/capture_orig.gif" alt="cmatrix screencast">
-</center>
+</p>
 
 ![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png)
 
 ## :zap: Maintainers
 - ➤ **Abishek V Ashok** [Core] - <abishekvashok@gmail.com><br> 
-<center>
-
-[![Twitter Badge](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/abishekvashok)
-[![GitHub Badge](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/abishekvashok)
-
-</center>
+<p align="center">
+  <a href="https://twitter.com/abishekvashok">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white">
+  </a>
+  <a href="https://github.com/abishekvashok">
+    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white">
+  </a>
+</p>
 
 
 ## :busts_in_silhouette: Our Contributors
