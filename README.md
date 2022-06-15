@@ -1,6 +1,6 @@
+<h1 align="center">CMatrix</h1>
 
 <center>
-# CMAtrix
 
 ### Matrix like effect in your terminal
 
