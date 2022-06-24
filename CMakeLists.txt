@@ -82,8 +82,8 @@ find_package(Intl)
 if (Intl_FOUND AND USE_GETTEXT)
 	include_directories(AFTER ${Intl_INCLUDE_DIRS})
 	add_definitions(-DHAVE_LIBINTL_H)
-	add_definitions(-DLOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}")
 endif ()
+add_definitions(-DLOCALEDIR="${CMAKE_INSTALL_FULL_LOCALEDIR}")
 
 add_executable(cmatrix cmatrix.c)
 
