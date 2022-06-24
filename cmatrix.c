@@ -504,7 +504,7 @@ int main(int argc, char *argv[]) {
 
     var_init();
 
-    if (user_charset == NULL) change_charset('c');
+    if (user_charset == NULL) change_charset('A');
 
     while (1) {
 #ifndef _WIN32
