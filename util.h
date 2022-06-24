@@ -14,7 +14,7 @@ void c_die(const char *msg, ...) {
     va_list ap;
     fprintf(stderr, "cmatrix: error: ");
     va_start(ap, msg);
-    vfprintf(stderr, gettext(msg), ap);
+    vfprintf(stderr, _(msg), ap);
     va_end(ap);
     fprintf(stderr, "\n");
     exit(EXIT_FAILURE);

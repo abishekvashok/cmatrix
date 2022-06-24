@@ -341,8 +341,10 @@ int main(int argc, char *argv[]) {
 
     srand((unsigned) time(NULL));
     setlocale(LC_ALL, "");
+#ifdef HAVE_LIBINTL_H
     bindtextdomain (PACKAGE, LOCALEDIR);
     textdomain (PACKAGE);
+#endif
 
     while ((optchr = getopt(argc, argv, "aAbBcfhilLnrosSmxkVM:u:U:C:t:")) != EOF) {
         switch (optchr) {
@@ -394,7 +396,7 @@ int main(int argc, char *argv[]) {
             locked = true;
             //if -M was used earlier, don't override it
             if (msg[0] == '\0') {
-                msg = (char*)gettext(LOCKED_MSG);
+                msg = (char*)_(LOCKED_MSG);
             }
             break;
         case 'M':
