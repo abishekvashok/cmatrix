@@ -113,6 +113,7 @@ int *updates = NULL; /* What does this do again? */
 size_t frame = 1;
 static char **user_charset = NULL;
 static size_t charset_len = 0;
+const int char_offset = 0xff;
 #ifndef _WIN32
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
 size_t frame_signaled = 0;
@@ -670,21 +671,21 @@ int main(int argc, char *argv[]) {
                             if (((int) rand() % 3) == 1) {
                                 matrix[0][j].val = 0;
                             } else {
-                                matrix[0][j].val = (int) rand() % charset_len;
+                                matrix[0][j].val = (int) rand() % charset_len + char_offset;
                             }
                             spaces[j] = (int) rand() % LINES + 1;
                         }
                     } else if (random > charset_len && matrix[1][j].val != 1) {
                         matrix[0][j].val = ' ';
                     } else {
-                        matrix[0][j].val = (int) rand() % charset_len;
+                        matrix[0][j].val = (int) rand() % charset_len + char_offset;
                     }
                 } else { /* New style scrolling (default) */
                     if (matrix[0][j].val == -1 && matrix[1][j].val == ' ' && spaces[j] > 0) {
                         spaces[j]--;
                     } else if (matrix[0][j].val == -1 && matrix[1][j].val == ' ') {
                         length[j] = (int) rand() % (LINES - 3) + 3;
-                        matrix[0][j].val = (int) rand() % charset_len;
+                        matrix[0][j].val = (int) rand() % charset_len + char_offset;
 
                         spaces[j] = (int) rand() % LINES + 1;
                     }
@@ -708,7 +709,7 @@ int main(int argc, char *argv[]) {
                             matrix[i][j].is_head = false;
                             if (changes) {
                                 if (rand() % 8 == 0)
-                                    matrix[i][j].val = (int) rand() % charset_len;
+                                    matrix[i][j].val = (int) rand() % charset_len + char_offset;
                             }
                             i++;
                             y++;
@@ -719,7 +720,7 @@ int main(int argc, char *argv[]) {
                             continue;
                         }
 
-                        matrix[i][j].val = (int) rand() % charset_len;
+                        matrix[i][j].val = (int) rand() % charset_len + char_offset;
                         matrix[i][j].is_head = true;
 
                         /* If we're at the top of the column and it's reached its
@@ -749,8 +750,8 @@ int main(int argc, char *argv[]) {
                 move(i - y, j);
                 char* stp = NULL;
 
-                if (matrix[i][j].val > -1 && matrix[i][j].val < charset_len && matrix[i][j].val != ' ') {
-                    stp = user_charset[matrix[i][j].val];
+                if (matrix[i][j].val > -1 && (matrix[i][j].val - char_offset) < charset_len && matrix[i][j].val != ' ') {
+                    stp = user_charset[matrix[i][j].val - char_offset];
                 } else {
                     stp = " ";
                 }
