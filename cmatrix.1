@@ -26,8 +26,20 @@ Linux mode (sets "matrix.fnt" font in console)
 .I "\-o"
 Use old-style scrolling
 .TP
+.I "\-c"
+Only print the shadows of letters 
+.TP
+.I "\-L"
+Locks cmatrix, Unable to quit
+.TP
 .I "\-h, \-?"
 Print usage and exit
+.TP
+.I "\-r"
+"Rainbow" mode, rainbow colored character
+.TP
+.I "\-k"
+Every characters change 
 .TP
 .I "\-n"
 No bold characters (overrides \-b and \-B)
@@ -50,6 +62,10 @@ Screen update delay 0 - 9, default 4
 .I "\-C color"
 Use this color for matrix (default green).
 Valid colors are green, red, blue, white, yellow, cyan, magenta and black.
+.TP
+.I "\-M message"
+Add a message in the center of cmatrix
+.TP
 .I "\-t tty"
 Set tty to use
 .SS KEYSTROKES
