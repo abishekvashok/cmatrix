@@ -60,7 +60,7 @@ add_executable(cmatrix cmatrix.c)
 
 target_link_libraries(cmatrix ${CURSES_LIBRARIES})
 
-install(TARGETS cmatrix DESTINATION bin)
+install(TARGETS cmatrix DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cmatrix.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 
 if     (UNIX)
