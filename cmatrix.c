@@ -21,6 +21,8 @@
 
 */
 
+#define NCURSES_WIDECHAR 1
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -521,9 +523,12 @@ if (console) {
 
     /* Set up values for random number generation */
     if (classic) {
-        /* Japanese character unicode range [they are seen in the original cmatrix] */
-        randmin = 12288;
-        highnum = 12351;
+        /* Half-width kana characters. In the movie they are y-axis flipped, and
+         * they appear alongside latin characters and numerals, but this is the
+         * closest we can do with a standard unicode set and a single number
+         * range */
+        randmin = 0xff66;
+        highnum = 0xff9d;
     } else if (console || xwindow) {
         randmin = 166;
         highnum = 217;
@@ -834,7 +839,15 @@ if (console) {
                         } else if (lambda && matrix[i][j].val != ' ') {
                             addstr("λ");
                         } else {
-                            addch(matrix[i][j].val);
+                            /* addch doesn't seem to work with unicode
+                             * characters and there was no direct equivalent.
+                             * So, construct a c-style string with the character
+                             * and print that.
+                             */
+                            wchar_t char_array[2];
+                            char_array[0] = matrix[i][j].val;
+                            char_array[1] = 0;
+                            addwstr(char_array);
                         }
                         if (bold == 2 ||
                             (bold == 1 && matrix[i][j].val % 2 == 0)) {
