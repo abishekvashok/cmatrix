@@ -6,11 +6,16 @@ AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE
 
 AC_CANONICAL_HOST
+host_osx=no
+native_windows=no
 case $host in
   *mingw*)
+    native_windows=yes
+    ;;
+  *darwin*)
+    host_osx=yes
     ;;
   *)
-    native_windows=no
     ;;
 esac
 
@@ -81,6 +86,11 @@ fi
 dnl Build static executable on native Windows
 if test x$native_windows != xno; then
   CFLAGS="$CFLAGS -static"
+fi
+
+dnl Add -D_XOPEN_SOURCE_EXTENDED to enable wide char support in Mac OS
+if test x$host_osx != xno; then
+  CFLAGS="$CFLAGS -D_XOPEN_SOURCE_EXTENDED"
 fi
 
 dnl cmatrix terminal font disable option (default enabled)
