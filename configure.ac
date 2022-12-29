@@ -7,10 +7,14 @@ AM_INIT_AUTOMAKE
 
 AC_CANONICAL_HOST
 host_osx=no
+host_linux=no
 native_windows=no
 case $host in
   *mingw*)
     native_windows=yes
+    ;;
+  *linux*)
+    host_linux=yes
     ;;
   *darwin*)
     host_osx=yes
@@ -25,8 +29,23 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
 dnl Checks for libraries.
-dnl Replace `main' with a function in -lncurses:
+FOUND_NCURSESW=no
+AC_CHECK_LIB(ncursesew, waddnwstr, FOUND_NCURSESW=yes)
 AC_CHECK_LIB(ncurses, main)
+
+dnl wide character support for ncurses is found in seperate library ncursesw in
+dnl some linux distributions like ubuntu, warn if it is not present in that case
+if test x$FOUND_NCURSESW = xno; then
+    if test x$host_linux = xyes; then
+        AC_MSG_WARN([
+
+*** ncurses with wide character support is packaged as a seperate library (ncursesw)
+*** on some linux distributions such as ubunutu. If you face compilation errors,
+*** please install the library.
+
+])
+    fi
+fi
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -40,7 +59,7 @@ dnl Checks for libraries.
 AC_CHECK_HEADERS(curses.h ncurses.h)
 
 CURSES_LIB_NAME=""
-AC_CHECK_LIB(ncurses, tgetent, CURSES_LIB="-lncurses" CURSES_LIB_NAME=ncurses)
+AC_CHECK_LIB(ncurses, tgetent, CURSES_LIB="-lncursesw" CURSES_LIB=ncursesw)
 
 if eval "test x$CURSES_LIB_NAME = x"
 then
