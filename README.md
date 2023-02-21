@@ -114,7 +114,7 @@ For more options and **help** run `cmatrix -h` <br>OR<br> Read Manual Page by ru
 _To get the program to look most like the movie, use `cmatrix -lba`_
 _To get the program to look most like the Win/Mac screensaver, use `cmatrix -ol`_
 
-> :round_pushpin: _Note: cmatrix is probably not particularly portable or efficient, but it wont hog
+> :round_pushpin: _Note: cmatrix is probably not particularly portable or efficient, but it won't hog
 **too** much CPU time._
 
 ![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png)
@@ -173,7 +173,7 @@ _To get the program to look most like the Win/Mac screensaver, use `cmatrix -ol`
 ![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png)
 
 ## :book: Contribution Guide
-If you have any suggestions/flames/patches to send, please feel free to
+If you have any suggestions/flames/patches to send, please feel free to:
 - Open issues and if possible label them, so that it is easy to categorise features, bugs etc.
 - If you solved some problems or made some valuable changes, Please open a Pull Request on Github.
 - See [contributing.md](./CONTRIBUTING.md) for more details.
