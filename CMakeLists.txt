@@ -57,6 +57,13 @@ find_package(Curses)
 include_directories(${CURSES_INCLUDE_DIR})
 add_definitions(-DHAVE_NCURSES_H)
 
+include(CheckSymbolExists)
+list(APPEND CMAKE_REQUIRED_LIBRARIES ncurses)
+check_symbol_exists(use_default_colors "ncurses.h" HAVE_USE_DEFAULT_COLORS)
+if (HAVE_USE_DEFAULT_COLORS)
+    add_definitions(-DHAVE_USE_DEFAULT_COLORS)
+endif()
+
 add_executable(cmatrix cmatrix.c)
 
 target_link_libraries(cmatrix ${CURSES_LIBRARIES})
