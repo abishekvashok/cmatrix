@@ -77,6 +77,16 @@ if (HAVE_RESIZETERM)
 	add_definitions(-DHAVE_RESIZETERM)
 endif()
 
+find_program(HAVE_SETFONT setfont)
+find_program(HAVE_CONSOLECHARS consolechars)
+if (HAVE_SETFONT)
+	add_definitions(-DHAVE_SETFONT)
+endif()
+if (HAVE_CONSOLECHARS)
+	add_definitions(-DHAVE_CONSOLECHARS)
+endif()
+
+
 add_executable(cmatrix cmatrix.c)
 
 find_package(Gettext)
