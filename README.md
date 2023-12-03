@@ -150,7 +150,7 @@ _To get the program to look most like the Win/Mac screensaver, use `cmatrix -ol`
 
 
 ## :busts_in_silhouette: Our Contributors
-#### :small_orange_diamond: Thanks to:
+#### :small_orange_diamond: Thanks to
 - ➤ **Chris Allegretta** <chrisa@asty.org> for writing cmatrix up in a fortnight and giving us
   the responsibility to further improve it.
 - ➤ **Krisjon Hanson** and **Bjoern Ganslandt** for helping with bold support and
