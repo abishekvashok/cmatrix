@@ -146,6 +146,32 @@ void c_die(char *msg, ...) {
     exit(0);
 }
 
+/* Reads the content of a give path into a char pointer */
+char *read_file(char *path) {
+    FILE *file;
+    char *buf;
+    long fs;
+
+    file = fopen(path, "r");
+    if (!file){
+        c_die("Could not read message file.\n");
+    }
+
+    fseek(file , 0L , SEEK_END);
+    fs = ftell(file);
+    fseek(file, 0L, SEEK_SET);
+
+    buf = (char*)calloc(fs, sizeof(char));
+    if (!buf) {
+        c_die("Could not allocate memory.\n");
+    }
+
+    fread(buf, sizeof(char), fs, file);
+    fclose(file);
+
+    return buf;
+}
+
 void usage(void) {
     printf(" Usage: cmatrix -[abBcfhlsmVxk] [-u delay] [-C color] [-t tty] [-M message]\n");
     printf(" -a: Asynchronous scroll\n");
@@ -161,7 +187,7 @@ void usage(void) {
     printf(" -s: \"Screensaver\" mode, exits on first keystroke\n");
     printf(" -x: X window mode, use if your xterm is using mtx.pcf\n");
     printf(" -V: Print version information and exit\n");
-    printf(" -M [message]: Prints your message in the center of the screen. Overrides -L's default message.\n");
+    printf(" -M [message]: Prints your message in the center of the screen. Overrides -L's default message. Accepts readable files.\n");
     printf(" -u delay (0 - 10, default 4): Screen update delay\n");
     printf(" -C [color]: Use this color for matrix (default green)\n");
     printf(" -r: rainbow mode\n");
@@ -332,6 +358,7 @@ int main(int argc, char *argv[]) {
     int classic = 0;
     int changes = 0;
     char *msg = "";
+    char *mfile = "";
     char *tty = NULL;
 
     srand((unsigned) time(NULL));
@@ -396,6 +423,11 @@ int main(int argc, char *argv[]) {
             break;
         case 'M':
             msg = strdup(optarg);
+
+            // check if msg is a readable file
+            if(access(msg, F_OK) == 0) {
+                mfile = msg;
+            }
             break;
         case 'n':
             bold = -1;
@@ -862,30 +894,61 @@ if (console) {
             }
         }
 
+        // check if -M was used with a file
+        // if yes, read the msg from the file
+        if (mfile[0] != '\0') {
+            msg = read_file(mfile);
+        }
+
         //check if -M and/or -L was used
         if (msg[0] != '\0') {
-            //Add our message to the screen
-            int msg_x = LINES/2;
-            int msg_y = COLS/2 - strlen(msg)/2;
+            // Add our message to the screen
+            int multiline = 0;
             int i = 0;
+
+            // count the newlines
+            for (i = 0; i < strlen(msg); i++)
+                if(msg[i] == '\n')
+                    multiline++;
+
+            char *line = strtok(msg, "\r\n");
+            if (line == NULL) {
+                line = strtok(msg, "\n");
+                if (line == NULL)
+                    line = msg;
+            }
+
+            int x_offset = -1 * multiline/2;
+            int msg_x = LINES/2 + x_offset;
+            int msg_y = COLS/2 - strlen(line)/2;
 
             //Add space before message
             move(msg_x-1, msg_y-2);
-            for (i = 0; i < strlen(msg)+4; i++)
+            for (i = 0; i < strlen(line)+4; i++)
                 addch(' ');
 
-            //Write message
-            move(msg_x, msg_y-2);
-            addch(' ');
-            addch(' ');
-            addstr(msg);
-            addch(' ');
-            addch(' ');
+            while (line != NULL){
+                msg_x = LINES/2 + x_offset;
+                msg_y = COLS/2 - strlen(line)/2;
 
-            //Add space after message
-            move(msg_x+1, msg_y-2);
-            for (i = 0; i < strlen(msg)+4; i++)
+                //Write message
+                move(msg_x, msg_y-2);
                 addch(' ');
+                addch(' ');
+                addstr(line);
+                addch(' ');
+                addch(' ');
+
+                //Add space after message
+                move(msg_x+1, msg_y-2);
+                for (i = 0; i < strlen(line)+4; i++)
+                    addch(' ');
+
+                line = strtok(NULL, "\r\n");
+                if (line == NULL)
+                    line = strtok(NULL, "\n");
+                x_offset++;
+            }
         }
 
         napms(update * 10);
