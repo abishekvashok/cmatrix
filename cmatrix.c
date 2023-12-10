@@ -85,6 +85,7 @@ typedef struct cmatrix {
 int console = 0;
 int xwindow = 0;
 int lock = 0;
+int lock_count = 0;
 cmatrix **matrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
@@ -154,7 +155,7 @@ void usage(void) {
     printf(" -c: Use Japanese characters as seen in the original matrix. Requires appropriate fonts\n");
     printf(" -f: Force the linux $TERM type to be on\n");
     printf(" -l: Linux mode (uses matrix console font)\n");
-    printf(" -L: Lock mode (can be closed from another terminal)\n");
+    printf(" -L: Lock mode (Press L three times to unlock)\n");
     printf(" -o: Use old-style scrolling\n");
     printf(" -h: Print usage and exit\n");
     printf(" -n: No bold characters (overrides -b and -B, default)\n");
@@ -598,7 +599,14 @@ if (console) {
                     bold = 2;
                     break;
                 case 'L':
+                    if (lock == 1) {
+                        lock_count++;
+                    }
                     lock = 1;
+                    if (lock_count == 3) {
+                        lock = 0;
+                        lock_count = 0;
+                    }
                     break;
                 case 'n':
                     bold = 0;
