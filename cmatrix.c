@@ -56,6 +56,7 @@
 #include <curses.h>
 #endif
 #endif
+
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
