@@ -56,7 +56,6 @@
 #include <curses.h>
 #endif
 #endif
-
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
@@ -261,7 +260,10 @@ void resize_screen(void) {
     char *tty;
     int fd = 0;
     int result = 0;
+    int cols = 0;
+    int lines = 0;
     struct winsize win;
+
 
     tty = ttyname(0);
     if (!tty) {
@@ -271,8 +273,8 @@ void resize_screen(void) {
     result = GetConsoleScreenBufferInfo(hStdHandle, &csbiInfo);
     if (!result)
         return;
-    LINES = csbiInfo.dwSize.Y;
-    COLS = csbiInfo.dwSize.X;
+    lines = csbiInfo.dwSize.Y;
+    cols = csbiInfo.dwSize.X;
 #else
     }
     fd = open(tty, O_RDWR);
@@ -284,21 +286,21 @@ void resize_screen(void) {
         return;
     }
 
-    COLS = win.ws_col;
-    LINES = win.ws_row;
+    cols = win.ws_col;
+    lines = win.ws_row;
 #endif
 
-    if (LINES < 10) {
-        LINES = 10;
+    if (lines < 10) {
+        lines = 10;
     }
-    if (COLS < 10) {
-        COLS = 10;
+    if (cols < 10) {
+        cols = 10;
     }
 
 #ifdef HAVE_RESIZETERM
-    resizeterm(LINES, COLS);
+    resizeterm(lines, cols);
 #ifdef HAVE_WRESIZE
-    if (wresize(stdscr, LINES, COLS) == ERR) {
+    if (wresize(stdscr, lines, cols) == ERR) {
         c_die("Cannot resize window!");
     }
 #endif /* HAVE_WRESIZE */
