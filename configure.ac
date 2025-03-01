@@ -57,6 +57,13 @@ then
     AC_CHECK_LIB(tinfo, tgetent, CURSES_LIB="-ltinfo" CURSES_LIB_NAME=tinfo)
 fi
 
+dnl If this is ncurses, waddnwstr might be in ncursesw instead.
+if eval "test x$CURSES_LIB_NAME = xncurses"
+then
+    AC_CHECK_LIB(ncurses, waddnwstr, [],
+      AC_CHECK_LIB(ncursesw, waddnwstr, CURSES_LIB="$CURSES_LIB -lncursesw"))
+fi
+
 if eval "test x$CURSES_LIB_NAME = x"
 then
     AC_MSG_WARN([

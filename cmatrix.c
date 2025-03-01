@@ -86,6 +86,7 @@ int console = 0;
 int xwindow = 0;
 int lock = 0;
 cmatrix **matrix = (cmatrix **) NULL;
+cmatrix **omatrix = (cmatrix **) NULL;
 int *length = NULL;  /* Length of cols in each line */
 int *spaces = NULL;  /* Spaces left to fill */
 int *updates = NULL; /* What does this do again? */
@@ -196,12 +197,17 @@ void var_init() {
     if (matrix != NULL) {
         free(matrix[0]);
         free(matrix);
+        free(omatrix[0]);
+        free(omatrix);
     }
 
     matrix = nmalloc(sizeof(cmatrix *) * (LINES + 1));
+    omatrix = nmalloc(sizeof(cmatrix *) * (LINES + 1));
     matrix[0] = nmalloc(sizeof(cmatrix) * (LINES + 1) * COLS);
+    omatrix[0] = nmalloc(sizeof(cmatrix) * (LINES + 1) * COLS);
     for (i = 1; i <= LINES; i++) {
         matrix[i] = matrix[i - 1] + COLS;
+        omatrix[i] = omatrix[i - 1] + COLS;
     }
 
     if (length != NULL) {
@@ -223,6 +229,7 @@ void var_init() {
     for (i = 0; i <= LINES; i++) {
         for (j = 0; j <= COLS - 1; j += 2) {
             matrix[i][j].val = -1;
+            omatrix[i][j].val = -1;
         }
     }
 
@@ -333,6 +340,7 @@ int main(int argc, char *argv[]) {
     int changes = 0;
     char *msg = "";
     char *tty = NULL;
+    NCURSES_ATTR_T oattr = 0;
 
     srand((unsigned) time(NULL));
     setlocale(LC_ALL, "");
@@ -754,24 +762,54 @@ if (console) {
                     }
                 }
             }
-            /* A simple hack */
-            if (!oldstyle) {
-                y = 1;
-                z = LINES;
-            } else {
-                y = 0;
-                z = LINES - 1;
-            }
-            for (i = y; i <= z; i++) {
-                move(i - y, j);
+        }
+
+        /* A simple hack */
+        if (!oldstyle) {
+            y = 1;
+            z = LINES;
+        } else {
+            y = 0;
+            z = LINES - 1;
+        }
+
+        // Update horizontally so that we can omit a move() if the last
+        // insertion already advanced the cursor to there.
+
+        int ox = -1, oy = -1;
+        for (i = y; i <= z; i++) {
+          for (j = 0; j <= COLS - 1; j += 2) {
+
+                if (omatrix[i][j].val == matrix[i][j].val &&
+                    omatrix[i][j].is_head == matrix[i][j].is_head) {
+                  continue;
+                }
+
+                omatrix[i][j] = matrix[i][j];
+
+                // Move to the next column using a space instead of "\e[24;80H"
+                if (ox == j - 1 && oy == i - y) {
+                  addch(' ');
+                } else {
+                  move(i - y, j);
+                }
+
+                ox = j + 1;
+                oy = i - y;
+
+                NCURSES_ATTR_T attr = 0;
 
                 if (matrix[i][j].val == 0 || (matrix[i][j].is_head && !rainbow)) {
                     if (console || xwindow) {
-                        attron(A_ALTCHARSET);
+                        attr |= A_ALTCHARSET;
                     }
-                    attron(COLOR_PAIR(COLOR_WHITE));
+                    attr |= COLOR_PAIR(COLOR_WHITE);
                     if (bold) {
-                        attron(A_BOLD);
+                        attr |= A_BOLD;
+                    }
+                    if (attr != oattr) {
+                        attrset(attr);
+                        oattr = attr;
                     }
                     if (matrix[i][j].val == 0) {
                         if (console || xwindow) {
@@ -785,13 +823,6 @@ if (console) {
                         addch(matrix[i][j].val);
                     }
 
-                    attroff(COLOR_PAIR(COLOR_WHITE));
-                    if (bold) {
-                        attroff(A_BOLD);
-                    }
-                    if (console || xwindow) {
-                        attroff(A_ALTCHARSET);
-                    }
                 } else {
                     if (rainbow) {
                         int randomColor = rand() % 6;
@@ -817,27 +848,36 @@ if (console) {
                                 break;
                        }
                     }
-                    attron(COLOR_PAIR(mcolor));
+                    attr |= COLOR_PAIR(mcolor);
                     if (matrix[i][j].val == 1) {
                         if (bold) {
-                            attron(A_BOLD);
+                            attr |= A_BOLD;
                         }
                         addch('|');
                         if (bold) {
-                            attroff(A_BOLD);
+                            attr |= A_BOLD;
                         }
                     } else {
                         if (console || xwindow) {
-                            attron(A_ALTCHARSET);
+                            attr |= A_ALTCHARSET;
                         }
                         if (bold == 2 ||
                             (bold == 1 && matrix[i][j].val % 2 == 0)) {
-                            attron(A_BOLD);
+                            attr |= A_BOLD;
+                        }
+                        if (attr != oattr) {
+                            attrset(attr);
+                            oattr = attr;
                         }
                         if (matrix[i][j].val == -1) {
                             addch(' ');
                         } else if (lambda && matrix[i][j].val != ' ') {
                             addstr("λ");
+                        } else if (matrix[i][j].val < 0xFF) {
+                            // If it's not a unichar, write it the easy way.
+                            // Valgrind tells me that addwstr is doing an
+                            // invalid read on Rasperry Pi + Debian 12.
+                            addch(matrix[i][j].val);
                         } else {
                             /* addch doesn't seem to work with unicode
                              * characters and there was no direct equivalent.
@@ -849,15 +889,7 @@ if (console) {
                             char_array[1] = 0;
                             addwstr(char_array);
                         }
-                        if (bold == 2 ||
-                            (bold == 1 && matrix[i][j].val % 2 == 0)) {
-                            attroff(A_BOLD);
-                        }
-                        if (console || xwindow) {
-                            attroff(A_ALTCHARSET);
-                        }
                     }
-                    attroff(COLOR_PAIR(mcolor));
                 }
             }
         }
