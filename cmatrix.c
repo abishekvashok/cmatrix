@@ -79,6 +79,7 @@
 typedef struct cmatrix {
     int val;
     bool is_head;
+    int color;  // For multi-color mode, each character can have a different color
 } cmatrix;
 
 /* Global variables */
@@ -92,6 +93,11 @@ int *updates = NULL; /* What does this do again? */
 #ifndef _WIN32
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
 #endif
+int* color_array = NULL;     /* Array of color values for multi-color mode */
+int num_colors = 0;          /* Number of colors in current use (0 when not in multi-color mode) */
+int original_num_colors = 0; /* Remember the original number of colors */
+int mcolor = COLOR_GREEN;    /* Current matrix color */
+int rainbow = 0;             /* Flag for rainbow mode */
 
 int va_system(char *str, ...) {
 
@@ -164,7 +170,9 @@ void usage(void) {
     printf(" -M [message]: Prints your message in the center of the screen. Overrides -L's default message.\n");
     printf(" -u delay (0 - 10, default 4): Screen update delay\n");
     printf(" -C [color]: Use this color for matrix (default green)\n");
+    printf("     Multiple colors can be specified as comma-separated list (e.g. -C red,blue,green)\n");
     printf(" -r: rainbow mode\n");
+    printf("     Will use colors from -C if multiple specified, otherwise full rainbow\n");
     printf(" -m: lambda mode\n");
     printf(" -k: Characters change while scrolling. (Works without -o opt.)\n");
     printf(" -t [tty]: Set tty to use\n");
@@ -187,6 +195,29 @@ void *nmalloc(size_t howmuch) {
     }
 
     return r;
+}
+
+/* Parse a color name and return the corresponding COLOR_* constant */
+int parse_color(const char* color_name) {
+    if (!strcasecmp(color_name, "green")) {
+        return COLOR_GREEN;
+    } else if (!strcasecmp(color_name, "red")) {
+        return COLOR_RED;
+    } else if (!strcasecmp(color_name, "blue")) {
+        return COLOR_BLUE;
+    } else if (!strcasecmp(color_name, "white")) {
+        return COLOR_WHITE;
+    } else if (!strcasecmp(color_name, "yellow")) {
+        return COLOR_YELLOW;
+    } else if (!strcasecmp(color_name, "cyan")) {
+        return COLOR_CYAN;
+    } else if (!strcasecmp(color_name, "magenta")) {
+        return COLOR_MAGENTA;
+    } else if (!strcasecmp(color_name, "black")) {
+        return COLOR_BLACK;
+    } else {
+        return -1;  /* Invalid color */
+    }
 }
 
 /* Initialize the global variables */
@@ -223,6 +254,7 @@ void var_init() {
     for (i = 0; i <= LINES; i++) {
         for (j = 0; j <= COLS - 1; j += 2) {
             matrix[i][j].val = -1;
+            matrix[i][j].color = mcolor;  // Initialize with default color
         }
     }
 
@@ -310,6 +342,27 @@ void resize_screen(void) {
     refresh();
 }
 
+/**
+ * Selects a color for a matrix character based on current global program state.
+ * 
+ * This function uses GLOBAL STATE variables:
+ * - num_colors: Number of colors in the custom palette
+ * - color_array: Array of custom color values
+ * - rainbow: Flag indicating if rainbow mode is active
+ * - mcolor: Current default color
+ * 
+ * @return The selected color value (COLOR_* constant)
+ */
+int select_matrix_color(void) {
+    if (num_colors > 0 && color_array != NULL && !rainbow) {
+        /* Multi-color mode - select from custom palette */
+        return color_array[rand() % num_colors];
+    } else {
+        /* Single color mode or no custom palette - use global color */
+        return mcolor;
+    }
+}
+
 int main(int argc, char *argv[]) {
     int i, y, z, optchr, keypress;
     int j = 0;
@@ -323,8 +376,6 @@ int main(int argc, char *argv[]) {
     int random = 0;
     int update = 4;
     int highnum = 0;
-    int mcolor = COLOR_GREEN;
-    int rainbow = 0;
     int lambda = 0;
     int randnum = 0;
     int randmin = 0;
@@ -356,26 +407,48 @@ int main(int argc, char *argv[]) {
             bold = 2;
             break;
         case 'C':
-            if (!strcasecmp(optarg, "green")) {
-                mcolor = COLOR_GREEN;
-            } else if (!strcasecmp(optarg, "red")) {
-                mcolor = COLOR_RED;
-            } else if (!strcasecmp(optarg, "blue")) {
-                mcolor = COLOR_BLUE;
-            } else if (!strcasecmp(optarg, "white")) {
-                mcolor = COLOR_WHITE;
-            } else if (!strcasecmp(optarg, "yellow")) {
-                mcolor = COLOR_YELLOW;
-            } else if (!strcasecmp(optarg, "cyan")) {
-                mcolor = COLOR_CYAN;
-            } else if (!strcasecmp(optarg, "magenta")) {
-                mcolor = COLOR_MAGENTA;
-            } else if (!strcasecmp(optarg, "black")) {
-                mcolor = COLOR_BLACK;
+            if (strchr(optarg, ',')) {
+                /* Multiple colors specified, parse them */
+                char *colors_copy = strdup(optarg);
+                if (!colors_copy) {
+                    c_die("CMatrix: Out of memory!\n");
+                }
+                
+                /* Count number of colors */
+                int color_count = 1;
+                for (char *p = colors_copy; *p; p++) {
+                    if (*p == ',') color_count++;
+                }
+                
+                /* Allocate the color array */
+                color_array = nmalloc(color_count * sizeof(int));
+                num_colors = 0;
+                
+                /* Parse each color */
+                char *token = strtok(colors_copy, ",");
+                while (token != NULL) {
+                    int color = parse_color(token);
+                    if (color == -1) {
+                        free(colors_copy);
+                        c_die(" Invalid color selection '%s'\n Valid "
+                              "colors are green, red, blue, "
+                              "white, yellow, cyan, magenta and black.\n", token);
+                    }
+                    color_array[num_colors++] = color;
+                    token = strtok(NULL, ",");
+                }
+                original_num_colors = num_colors;  // Remember the original count
+                free(colors_copy);
             } else {
-                c_die(" Invalid color selection\n Valid "
-                       "colors are green, red, blue, "
-                       "white, yellow, cyan, magenta " "and black.\n");
+                /* Single color specified */
+                num_colors = 0;
+                color_array = NULL;  /* Ensure color_array is NULL */
+                mcolor = parse_color(optarg);
+                if (mcolor == -1) {
+                    c_die(" Invalid color selection\n Valid "
+                          "colors are green, red, blue, "
+                          "white, yellow, cyan, magenta and black.\n");
+                }
             }
             break;
         case 'c':
@@ -618,25 +691,33 @@ if (console) {
                 case '!':
                     mcolor = COLOR_RED;
                     rainbow = 0;
+                    num_colors = 0;
                     break;
                 case '@':
                     mcolor = COLOR_GREEN;
                     rainbow = 0;
+                    num_colors = 0;
                     break;
                 case '#':
                     mcolor = COLOR_YELLOW;
                     rainbow = 0;
+                    num_colors = 0;
                     break;
                 case '$':
                     mcolor = COLOR_BLUE;
                     rainbow = 0;
+                    num_colors = 0;
                     break;
                 case '%':
                     mcolor = COLOR_MAGENTA;
                     rainbow = 0;
+                    num_colors = 0;
                     break;
                 case 'r':
                      rainbow = 1;
+                     if (original_num_colors > 0) {
+                         num_colors = original_num_colors;  // Restore original count for rainbow
+                     }
                      break;
                 case 'm':
                      lambda = !lambda;
@@ -644,16 +725,23 @@ if (console) {
                 case '^':
                     mcolor = COLOR_CYAN;
                     rainbow = 0;
+                    num_colors = 0;
                     break;
                 case '&':
                     mcolor = COLOR_WHITE;
                     rainbow = 0;
+                    num_colors = 0;
                     break;
                 case 'p':
                 case 'P':
                     pause = (pause == 0)?1:0;
                     break;
-
+                case '+':
+                    rainbow = 0;
+                    if (original_num_colors > 0) {
+                        num_colors = original_num_colors;  // Restore multi-color mode
+                    }
+                    break;
                 }
             }
         }
@@ -664,6 +752,7 @@ if (console) {
                 if (oldstyle) {
                     for (i = LINES - 1; i >= 1; i--) {
                         matrix[i][j].val = matrix[i - 1][j].val;
+                        matrix[i][j].color = matrix[i - 1][j].color;
                     }
                     random = (int) rand() % (randnum + 8) + randmin;
 
@@ -683,6 +772,7 @@ if (console) {
                                 matrix[0][j].val = 0;
                             } else {
                                 matrix[0][j].val = (int) rand() % randnum + randmin;
+                                matrix[0][j].color = select_matrix_color();
                             }
                             spaces[j] = (int) rand() % LINES + 1;
                         }
@@ -690,6 +780,7 @@ if (console) {
                         matrix[0][j].val = ' ';
                     } else {
                         matrix[0][j].val = (int) rand() % randnum + randmin;
+                        matrix[0][j].color = select_matrix_color();
                     }
 
                 } else { /* New style scrolling (default) */
@@ -700,6 +791,10 @@ if (console) {
                         && matrix[1][j].val == ' ') {
                         length[j] = (int) rand() % (LINES - 3) + 3;
                         matrix[0][j].val = (int) rand() % randnum + randmin;
+                        matrix[0][j].is_head = true;
+                        
+                        // Assign a random color to the character head
+                        matrix[0][j].color = select_matrix_color();
 
                         spaces[j] = (int) rand() % LINES + 1;
                     }
@@ -739,6 +834,9 @@ if (console) {
 
                         matrix[i][j].val = (int) rand() % randnum + randmin;
                         matrix[i][j].is_head = true;
+
+                        // Assign a random color to the new character head
+                        matrix[i][j].color = select_matrix_color();
 
                         /* If we're at the top of the column and it's reached its
                            full length (about to start moving down), we do this
@@ -794,28 +892,37 @@ if (console) {
                     }
                 } else {
                     if (rainbow) {
-                        int randomColor = rand() % 6;
-
-                        switch (randomColor) {
-                            case 0:
-                                mcolor = COLOR_GREEN;
-                                break;
-                            case 1:
-                                mcolor = COLOR_BLUE;
-                                break;
-                            case 2:
-                                mcolor = COLOR_BLACK;
-                                break;
-                            case 3:
-                                mcolor = COLOR_YELLOW;
-                                break;
-                            case 4:
-                                mcolor = COLOR_CYAN;
-                                break;
-                            case 5:
-                                mcolor = COLOR_MAGENTA;
-                                break;
-                       }
+                        if (num_colors > 0 && color_array != NULL) {
+                            // Rainbow mode with custom color palette
+                            mcolor = color_array[rand() % num_colors];
+                        } else {
+                            // Standard rainbow mode with predefined colors
+                            int randomColor = rand() % 6;
+                            
+                            switch (randomColor) {
+                                case 0:
+                                    mcolor = COLOR_GREEN;
+                                    break;
+                                case 1:
+                                    mcolor = COLOR_BLUE;
+                                    break;
+                                case 2:
+                                    mcolor = COLOR_BLACK;
+                                    break;
+                                case 3:
+                                    mcolor = COLOR_YELLOW;
+                                    break;
+                                case 4:
+                                    mcolor = COLOR_CYAN;
+                                    break;
+                                case 5:
+                                    mcolor = COLOR_MAGENTA;
+                                    break;
+                            }
+                        }
+                    } else if (num_colors > 0) {
+                        // Multi-color mode - use stored character colors
+                        mcolor = matrix[i][j].color;
                     }
                     attron(COLOR_PAIR(mcolor));
                     if (matrix[i][j].val == 1) {

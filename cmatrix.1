@@ -36,7 +36,7 @@ Locks cmatrix, Unable to quit
 Print usage and exit
 .TP
 .I "\-r"
-"Rainbow" mode, rainbow colored character
+"Rainbow" mode, rainbow colored characters. Uses colors from -C if multiple are specified, otherwise uses the full rainbow palette.
 .TP
 .I "\-k"
 Every characters change 
@@ -62,6 +62,9 @@ Screen update delay 0 - 9, default 4
 .I "\-C color"
 Use this color for matrix (default green).
 Valid colors are green, red, blue, white, yellow, cyan, magenta and black.
+Multiple colors can be specified by separating them with commas (e.g., "red,blue,green").
+When multiple colors are specified, they are used proportionally.
+Repeats are allowed for different mixes (e.g. "red,blue,blue" or "red,red,blue")
 .TP
 .I "\-M message"
 Add a message in the center of cmatrix
