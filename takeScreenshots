@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Produces a bunch of `cmatrix` screenshots and screencasts.
 # This script requires X and the following:
 #apt-get install rxvt byzanz
@@ -11,18 +11,17 @@ TERM_EMULATOR_BASE="rxvt +sb"
 CAPTURES_DIR="data/img"
 
 # Function to take a single cmatrix screenshot (takes about 3.5s to execute)
-# or optionally, a screncast of choosable length.
-function captureCMatrix()
-{
+# or optionally, a screencast of choosable length.
+captureCMatrix() {
 	CAPTURE_FILE="$1"
 	CMATRIX_OPTIONS="$2"
 	# If 0 (default if no 3rd param is given),
 	# we make a screenshot instead of a screencast.
 	SCREENCAST_DURATION="${3:-0}"
 
-	if [ ${SCREENCAST_DURATION} -gt 0 ]
+	if [ "${SCREENCAST_DURATION}" -gt 0 ]
 	then
-		let KILL_DELAY="${SCREENCAST_DURATION} + 1"
+		KILL_DELAY="$((SCREENCAST_DURATION + 1))"
 		CAPTURE_FILE="${CAPTURE_FILE}.gif"
 	else
 		KILL_DELAY=3
@@ -31,7 +30,7 @@ function captureCMatrix()
 	WINDOW_TITLE="CMatrix capture ${CAPTURE_FILE}"
 
 	# NOTE the "-PIPE" prevents output of the "Terminated: ..." message
-	( cmdpid=$BASHPID; ( sleep ${KILL_DELAY}; kill -PIPE $cmdpid ) & exec ${TERM_EMULATOR_BASE} -name "${WINDOW_TITLE}" -title "${WINDOW_TITLE}" -e bash -c "
+	( cmdpid=$BASHPID; ( sleep "${KILL_DELAY}"; kill -PIPE "$cmdpid" ) & exec ${TERM_EMULATOR_BASE} -name "${WINDOW_TITLE}" -title "${WINDOW_TITLE}" -e bash -c "
 		if [ ${SCREENCAST_DURATION} -gt 0 ]
 		then
 			# Take screencast (animated GIF)
@@ -74,4 +73,3 @@ do
 	${CMD_CS} "${CAPTURE_FILE_BASE}bold_C_${color}" "-b -C ${color}"
 done
 ${CMD_CS} "${CAPTURE_FILE_BASE}bold_rainbow" "-b -r"
-

@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 2.8)
 project(CMatrix LANGUAGES C)
 set(VERSION "2.0")
 
+include(GNUInstallDirs)
+
 # These are relative to CMAKE_INSTALL_PREFIX
 # which by default is "/usr/local"
 set(CONSOLE_FONTS_DIRS "share/consolefonts" "lib/kbd/consolefonts")
@@ -50,15 +52,24 @@ if	(HAVE_GETOPT_H)
 endif	()
 
 Set(CURSES_NEED_NCURSES TRUE)
+Set(CURSES_NEED_WIDE TRUE)
 find_package(Curses)
 include_directories(${CURSES_INCLUDE_DIR})
 add_definitions(-DHAVE_NCURSES_H)
+
+include(CheckSymbolExists)
+list(APPEND CMAKE_REQUIRED_LIBRARIES ncurses)
+check_symbol_exists(use_default_colors "ncurses.h" HAVE_USE_DEFAULT_COLORS)
+if (HAVE_USE_DEFAULT_COLORS)
+    add_definitions(-DHAVE_USE_DEFAULT_COLORS)
+endif()
 
 add_executable(cmatrix cmatrix.c)
 
 target_link_libraries(cmatrix ${CURSES_LIBRARIES})
 
-install(TARGETS cmatrix DESTINATION bin)
+install(TARGETS cmatrix DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES cmatrix.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 
 if     (UNIX)
 	foreach    (CONSOLE_FONTS_DIR ${CONSOLE_FONTS_DIRS})
@@ -85,4 +96,3 @@ if     (UNIX)
 		endif  ()
 	endforeach ()
 endif  ()
-
