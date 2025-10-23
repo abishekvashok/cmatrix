@@ -93,6 +93,7 @@ int *updates = NULL; /* What does this do again? */
 volatile sig_atomic_t signal_status = 0; /* Indicates a caught signal */
 #endif
 
+#if defined(HAVE_CONSOLECHARS) || defined(HAVE_SETFONT)
 int va_system(char *str, ...) {
 
     va_list ap;
@@ -103,6 +104,7 @@ int va_system(char *str, ...) {
     va_end(ap);
     return system(buf);
 }
+#endif
 
 /* What we do when we're all set to exit */
 void finish(void) {
