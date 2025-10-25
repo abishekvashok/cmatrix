@@ -168,6 +168,8 @@ void usage(void) {
     printf(" -m: lambda mode\n");
     printf(" -k: Characters change while scrolling. (Works without -o opt.)\n");
     printf(" -t [tty]: Set tty to use\n");
+    printf(" -U [charset]: Use given charset\n");
+
 }
 
 void version(void) {
@@ -310,6 +312,14 @@ void resize_screen(void) {
     refresh();
 }
 
+char *charset = NULL;
+int charsetlen;
+
+int randomchar(int randnum, int randmin, int customcharset) {
+    if (customcharset) return charset[(int) rand() % charsetlen];
+    else return (int) rand() % randnum + randmin;
+}
+
 int main(int argc, char *argv[]) {
     int i, y, z, optchr, keypress;
     int j = 0;
@@ -331,6 +341,7 @@ int main(int argc, char *argv[]) {
     int pause = 0;
     int classic = 0;
     int changes = 0;
+    int customcharset = 0;
     char *msg = "";
     char *tty = NULL;
 
@@ -339,7 +350,7 @@ int main(int argc, char *argv[]) {
 
     /* Many thanks to morph- (morph@jmss.com) for this getopt patch */
     opterr = 0;
-    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVM:u:C:t:")) != EOF) {
+    while ((optchr = getopt(argc, argv, "abBcfhlLnrosmxkVM:u:C:t:U:")) != EOF) {
         switch (optchr) {
         case 's':
             screensaver = 1;
@@ -428,6 +439,12 @@ int main(int argc, char *argv[]) {
         case 't':
             tty = optarg;
             break;
+	case 'U':
+	    charset = optarg;
+	    charsetlen = strlen(charset);
+	    customcharset = 1;
+            break;
+
         }
     }
 
@@ -682,14 +699,14 @@ if (console) {
                             if (((int) rand() % 3) == 1) {
                                 matrix[0][j].val = 0;
                             } else {
-                                matrix[0][j].val = (int) rand() % randnum + randmin;
+                                matrix[0][j].val = randomchar(randnum, randmin, customcharset);
                             }
                             spaces[j] = (int) rand() % LINES + 1;
                         }
                     } else if (random > highnum && matrix[1][j].val != 1) {
                         matrix[0][j].val = ' ';
                     } else {
-                        matrix[0][j].val = (int) rand() % randnum + randmin;
+                        matrix[0][j].val = randomchar(randnum, randmin, customcharset);
                     }
 
                 } else { /* New style scrolling (default) */
@@ -699,7 +716,7 @@ if (console) {
                     } else if (matrix[0][j].val == -1
                         && matrix[1][j].val == ' ') {
                         length[j] = (int) rand() % (LINES - 3) + 3;
-                        matrix[0][j].val = (int) rand() % randnum + randmin;
+                        matrix[0][j].val = randomchar(randnum, randmin, customcharset);
 
                         spaces[j] = (int) rand() % LINES + 1;
                     }
@@ -726,7 +743,7 @@ if (console) {
                             matrix[i][j].is_head = false;
                             if (changes) {
                                 if (rand() % 8 == 0)
-                                    matrix[i][j].val = (int) rand() % randnum + randmin;
+                                    matrix[i][j].val = randomchar(randnum, randmin, customcharset);
                             }
                             i++;
                             y++;
@@ -737,7 +754,7 @@ if (console) {
                             continue;
                         }
 
-                        matrix[i][j].val = (int) rand() % randnum + randmin;
+                        matrix[i][j].val = randomchar(randnum, randmin, customcharset);
                         matrix[i][j].is_head = true;
 
                         /* If we're at the top of the column and it's reached its
