@@ -1,6 +1,6 @@
 # CMake build system for CMatrix
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 project(CMatrix LANGUAGES C)
 set(VERSION "2.0")
@@ -51,11 +51,18 @@ if	(HAVE_GETOPT_H)
 	add_definitions(-DHAVE_GETOPT_H)
 endif	()
 
-Set(CURSES_NEED_NCURSES TRUE)
-Set(CURSES_NEED_WIDE TRUE)
-find_package(Curses)
-include_directories(${CURSES_INCLUDE_DIR})
-add_definitions(-DHAVE_NCURSES_H)
+if(WIN32)
+    set(CURSES_INCLUDE_DIR "C:/ncurses/include" CACHE PATH "Curses include directory")
+    set(CURSES_LIBRARY "C:/ncurses/lib/pdcurses.lib" CACHE PATH "Curses library")
+    include_directories(${CURSES_INCLUDE_DIR})
+    set(CURSES_LIBRARIES ${CURSES_LIBRARY})
+else()
+    Set(CURSES_NEED_NCURSES TRUE)
+    Set(CURSES_NEED_WIDE TRUE)
+    find_package(Curses REQUIRED)
+    include_directories(${CURSES_INCLUDE_DIR})
+    add_definitions(-DHAVE_NCURSES_H)
+endif()
 
 include(CheckSymbolExists)
 list(APPEND CMAKE_REQUIRED_LIBRARIES ncurses)
@@ -64,7 +71,7 @@ if (HAVE_USE_DEFAULT_COLORS)
     add_definitions(-DHAVE_USE_DEFAULT_COLORS)
 endif()
 
-add_executable(cmatrix cmatrix.c)
+add_executable(cmatrix cmatrix.c getopt.c)
 
 target_link_libraries(cmatrix ${CURSES_LIBRARIES})
 
