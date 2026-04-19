@@ -37,6 +37,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <stdbool.h>
 #endif
 
 #ifndef EXCLUDE_CONFIG_H
@@ -45,16 +46,20 @@
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#elif defined(_WIN32)
+extern int optind;
+extern char *optarg;
+extern int optopt;
+extern int opterr;
+#define strcasecmp _stricmp
 #endif
 
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
-#else
-#ifdef _WIN32
-#include <ncurses/curses.h>
+#elif defined(_WIN32)
+#include <curses.h>
 #else
 #include <curses.h>
-#endif
 #endif
 
 #ifdef HAVE_SYS_IOCTL_H
