@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <locale.h>
+#include <wchar.h>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -782,7 +783,12 @@ if (console) {
                     } else if (matrix[i][j].val == -1) {
                         addch(' ');
                     } else {
-                        addch(matrix[i][j].val);
+                        if (classic) {
+                            wchar_t wc[2] = {(wchar_t)matrix[i][j].val, L'\0'};
+                            addwstr(wc);
+                        } else {
+                            addch(matrix[i][j].val);
+                        }
                     }
 
                     attroff(COLOR_PAIR(COLOR_WHITE));
