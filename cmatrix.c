@@ -436,7 +436,7 @@ int main(int argc, char *argv[]) {
     _putenv_s("TERM", "");
 #endif
 
-    if (force && strcmp("linux", getenv("TERM"))) {
+    if (force && (getenv("TERM") == NULL || strcmp("linux", getenv("TERM")))) {
 #ifdef _WIN32
         SetEnvironmentVariableW(L"TERM", L"linux");
 #else
