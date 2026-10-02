@@ -12,8 +12,6 @@ include(GNUInstallDirs)
 set(CONSOLE_FONTS_DIRS "share/consolefonts" "lib/kbd/consolefonts")
 set(X_FONTS_DIRS "lib/X11/fonts/misc" "X11R6/lib/X11/fonts/misc" "share/fonts/X11/misc")
 
-set(MKFONTDIR "/usr/bin/mkfontdir")
-
 message(STATUS "Looking for include file config.h")
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/config.h")
     add_definitions(-DEXCLUDE_CONFIG_H)
@@ -71,28 +69,53 @@ target_link_libraries(cmatrix ${CURSES_LIBRARIES})
 install(TARGETS cmatrix DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES cmatrix.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 
-if     (UNIX)
-	foreach    (CONSOLE_FONTS_DIR ${CONSOLE_FONTS_DIRS})
-		if     (IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/${CONSOLE_FONTS_DIR}")
-			message(STATUS "Installing matrix console fonts to ${CMAKE_INSTALL_PREFIX}/${CONSOLE_FONTS_DIR}")
-			install(FILES
-				"${CMAKE_SOURCE_DIR}/matrix.fnt"
-				"${CMAKE_SOURCE_DIR}/matrix.psf.gz"
-				DESTINATION "${CONSOLE_FONTS_DIR}")
+option(CMATRIX_INSTALL_FONTS "Install the matrix console and X window fonts" ON)
+
+if     (UNIX AND CMATRIX_INSTALL_FONTS)
+	# Default to every candidate directory that exists on this machine, as
+	# before, but let packagers set the destinations explicitly (relative to
+	# CMAKE_INSTALL_PREFIX, or "" to skip) so the result does not depend on
+	# the build host.
+	foreach    (KIND CONSOLE X)
+		if     (NOT DEFINED CMATRIX_${KIND}_FONTS_DIRS)
+			set(FOUND_DIRS "")
+			foreach    (DIR ${${KIND}_FONTS_DIRS})
+				if     (IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/${DIR}")
+					list(APPEND FOUND_DIRS "${DIR}")
+				endif  ()
+			endforeach ()
+			set(CMATRIX_${KIND}_FONTS_DIRS "${FOUND_DIRS}" CACHE STRING
+				"${KIND} font directories, relative to CMAKE_INSTALL_PREFIX")
 		endif  ()
 	endforeach ()
-	foreach    (X_FONTS_DIR ${X_FONTS_DIRS})
-		if     (IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}")
-			message(STATUS "Installing matrix X window fonts to ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}")
-			install(FILES
-				"${CMAKE_SOURCE_DIR}/mtx.pcf"
-				DESTINATION "${X_FONTS_DIR}")
-			install(CODE
-				"message(STATUS \"Running mkfontdir ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR} ...\")")
-			install(CODE
-				"execute_process(COMMAND \"${MKFONTDIR}\" \"${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}\")")
-			install(CODE
-				"message(STATUS \"If this is the first time you have installed CMatrix you will probably have to restart X window in order to use the mtx.pcf font.\")")
-		endif  ()
+
+	foreach    (CONSOLE_FONTS_DIR ${CMATRIX_CONSOLE_FONTS_DIRS})
+		message(STATUS "Installing matrix console fonts to ${CMAKE_INSTALL_PREFIX}/${CONSOLE_FONTS_DIR}")
+		install(FILES
+			"${CMAKE_SOURCE_DIR}/matrix.fnt"
+			"${CMAKE_SOURCE_DIR}/matrix.psf.gz"
+			DESTINATION "${CONSOLE_FONTS_DIR}")
+	endforeach ()
+
+	find_program(MKFONTDIR mkfontdir)
+	foreach    (X_FONTS_DIR ${CMATRIX_X_FONTS_DIRS})
+		message(STATUS "Installing matrix X window fonts to ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}")
+		install(FILES
+			"${CMAKE_SOURCE_DIR}/mtx.pcf"
+			DESTINATION "${X_FONTS_DIR}")
+		# Only refresh the font index when installing directly to the live
+		# system. With DESTDIR (staged/package installs) the index belongs to
+		# the package manager, and running mkfontdir on the real directory
+		# would modify the build host.
+		install(CODE "
+			if     (\"\$ENV{DESTDIR}\" STREQUAL \"\")
+				if     (EXISTS \"${MKFONTDIR}\")
+					message(STATUS \"Running mkfontdir ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR} ...\")
+					execute_process(COMMAND \"${MKFONTDIR}\" \"${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}\")
+				endif  ()
+				message(STATUS \"If this is the first time you have installed CMatrix you will probably have to restart X window in order to use the mtx.pcf font.\")
+			else   ()
+				message(STATUS \"DESTDIR is set, not running mkfontdir on ${CMAKE_INSTALL_PREFIX}/${X_FONTS_DIR}\")
+			endif  ()")
 	endforeach ()
 endif  ()
