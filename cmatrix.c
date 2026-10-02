@@ -280,6 +280,7 @@ void resize_screen(void) {
         return;
     }
     result = ioctl(fd, TIOCGWINSZ, &win);
+    close(fd);
     if (result == -1) {
         return;
     }

@@ -64,6 +64,18 @@ if (HAVE_USE_DEFAULT_COLORS)
     add_definitions(-DHAVE_USE_DEFAULT_COLORS)
 endif()
 
+# resize_screen() only tells curses about the new terminal size when these
+# are defined; without them the matrix stays at its start-up size (#98, #108).
+# configure.ac has always checked for them, the CMake build did not.
+check_symbol_exists(resizeterm "ncurses.h" HAVE_RESIZETERM)
+if (HAVE_RESIZETERM)
+    add_definitions(-DHAVE_RESIZETERM)
+endif()
+check_symbol_exists(wresize "ncurses.h" HAVE_WRESIZE)
+if (HAVE_WRESIZE)
+    add_definitions(-DHAVE_WRESIZE)
+endif()
+
 add_executable(cmatrix cmatrix.c)
 
 target_link_libraries(cmatrix ${CURSES_LIBRARIES})
