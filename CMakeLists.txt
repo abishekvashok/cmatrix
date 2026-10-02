@@ -54,8 +54,19 @@ endif	()
 Set(CURSES_NEED_NCURSES TRUE)
 Set(CURSES_NEED_WIDE TRUE)
 find_package(Curses)
-include_directories(${CURSES_INCLUDE_DIR})
+include_directories(${CURSES_INCLUDE_DIRS})
 add_definitions(-DHAVE_NCURSES_H)
+
+# With CURSES_NEED_WIDE, FindCurses locates ncursesw/ncurses.h and returns
+# its parent directory, so the wide header has to be included by that name.
+# On distributions that ship separate narrow and wide headers (e.g. Gentoo),
+# plain <ncurses.h> lacks the wide-character API such as addwstr().
+set(CMAKE_REQUIRED_INCLUDES ${CURSES_INCLUDE_DIRS})
+check_include_files("ncursesw/ncurses.h" HAVE_NCURSESW_NCURSES_H)
+unset(CMAKE_REQUIRED_INCLUDES)
+if (HAVE_NCURSESW_NCURSES_H)
+    add_definitions(-DHAVE_NCURSESW_NCURSES_H)
+endif()
 
 include(CheckSymbolExists)
 list(APPEND CMAKE_REQUIRED_LIBRARIES ncurses)
