@@ -223,6 +223,7 @@ void var_init() {
     for (i = 0; i <= LINES; i++) {
         for (j = 0; j <= COLS - 1; j += 2) {
             matrix[i][j].val = -1;
+            matrix[i][j].is_head = false;
         }
     }
 
@@ -231,7 +232,7 @@ void var_init() {
         spaces[j] = (int) rand() % LINES + 1;
 
         /* And length of the stream */
-        length[j] = (int) rand() % (LINES - 3) + 3;
+        length[j] = (int) rand() % (LINES > 3 ? LINES - 3 : 1) + 3;
 
         /* Sentinel value for creation of new objects */
         matrix[1][j].val = ' ';
@@ -698,7 +699,7 @@ if (console) {
                         spaces[j]--;
                     } else if (matrix[0][j].val == -1
                         && matrix[1][j].val == ' ') {
-                        length[j] = (int) rand() % (LINES - 3) + 3;
+                        length[j] = (int) rand() % (LINES > 3 ? LINES - 3 : 1) + 3;
                         matrix[0][j].val = (int) rand() % randnum + randmin;
 
                         spaces[j] = (int) rand() % LINES + 1;
