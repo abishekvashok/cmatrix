@@ -782,7 +782,10 @@ if (console) {
                     } else if (matrix[i][j].val == -1) {
                         addch(' ');
                     } else {
-                        addch(matrix[i][j].val);
+			wchar_t char_array[2];
+    			char_array[0] = matrix[i][j].val;
+    			char_array[1] = 0;
+    			addwstr(char_array);
                     }
 
                     attroff(COLOR_PAIR(COLOR_WHITE));
