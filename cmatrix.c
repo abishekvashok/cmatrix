@@ -61,6 +61,10 @@
 #include <sys/ioctl.h>
 #endif
 
+#ifdef __linux__
+#include <linux/kd.h>
+#endif
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -430,6 +434,20 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
+
+#if defined(__linux__) && defined(KDGKBTYPE)
+    /* setfont and consolechars only work on a Linux virtual console. In a
+       terminal window they fail with a message that says nothing useful. */
+    if (console) {
+        char kbtype;
+        if (ioctl(STDIN_FILENO, KDGKBTYPE, &kbtype) != 0) {
+            fprintf(stderr, "cmatrix: error: -l only works on a Linux virtual "
+                    "console (e.g. Ctrl+Alt+F2),\nnot in a terminal window. "
+                    "Run cmatrix without -l there.\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+#endif
 
     /* Clear TERM variable on Windows */
 #ifdef _WIN32

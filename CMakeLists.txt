@@ -51,6 +51,18 @@ if	(HAVE_GETOPT_H)
 	add_definitions(-DHAVE_GETOPT_H)
 endif	()
 
+# -l switches the Linux console to the matrix font with consolechars or
+# setfont, and is only compiled in when one of them was found; otherwise it
+# always fails with "Unable to use both setfont and consolechars".
+# configure.ac has always checked for them, the CMake build did not.
+find_program(CONSOLECHARS consolechars)
+find_program(SETFONT setfont)
+if (CONSOLECHARS)
+    add_definitions(-DHAVE_CONSOLECHARS)
+elseif (SETFONT)
+    add_definitions(-DHAVE_SETFONT)
+endif()
+
 Set(CURSES_NEED_NCURSES TRUE)
 Set(CURSES_NEED_WIDE TRUE)
 find_package(Curses)
